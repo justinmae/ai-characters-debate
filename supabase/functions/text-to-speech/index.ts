@@ -17,8 +17,8 @@ serve(async (req) => {
     const { text, voiceId } = await req.json();
     console.log('Processing request for text:', text.substring(0, 50), '... with voiceId:', voiceId);
 
-    if (!text) {
-      throw new Error('Text is required');
+    if (!text || !voiceId) {
+      throw new Error('Text and voiceId are required');
     }
 
     const apiKey = Deno.env.get('ELEVEN_LABS_API_KEY');
@@ -51,13 +51,18 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error('ElevenLabs API error response:', errorText);
       
-      // Check for specific error cases
-      if (response.status === 401) {
-        throw new Error('Invalid ElevenLabs API key');
-      } else if (response.status === 429) {
-        throw new Error('ElevenLabs API rate limit exceeded');
-      }
-      throw new Error(`ElevenLabs API error: ${errorText}`);
+      // Return detailed error information
+      return new Response(
+        JSON.stringify({ 
+          error: 'ElevenLabs API error',
+          details: errorText,
+          status: response.status 
+        }), 
+        { 
+          status: response.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     console.log('Successfully received audio response');
@@ -79,7 +84,7 @@ serve(async (req) => {
     }
     
     const base64Audio = btoa(base64);
-    console.log('Successfully encoded audio to base64');
+    console.log('Successfully encoded audio to base64, length:', base64Audio.length);
 
     return new Response(
       JSON.stringify({ audioContent: base64Audio }),
