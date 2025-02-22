@@ -16,4 +16,6 @@ export interface DebateMessage {
   character: number;
   text: string;
   audio?: string;
+  characterName?: string;
 }
+
