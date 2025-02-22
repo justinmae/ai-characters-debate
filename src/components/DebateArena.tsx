@@ -1,10 +1,10 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, User, StopCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { playAudioFromBase64 } from '@/utils/audio';
 import Character from './Character';
 import TopicInput from './TopicInput';
 import DebateTranscript from './DebateTranscript';
@@ -18,7 +18,6 @@ const DebateArena = () => {
   const transcriptRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Auto scroll to bottom when new messages arrive
   useEffect(() => {
     if (transcriptRef.current) {
       transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
@@ -70,11 +69,9 @@ const DebateArena = () => {
       setMessages(prev => [...prev, newMessage]);
       setIsLoading(false);
 
-      // Play the new message
       await playMessage(data.text, characterNumber);
 
-      // Continue the debate if not finished
-      if (messages.length < 6) { // Limit to 3 exchanges
+      if (messages.length < 6) {
         generateDebateResponse(characterNumber === 1 ? 2 : 1);
       }
     } catch (error) {
@@ -92,7 +89,7 @@ const DebateArena = () => {
     if (!topic.trim()) return;
     setIsDebating(true);
     setMessages([]);
-    generateDebateResponse(1); // Start with Character 1
+    generateDebateResponse(1);
   };
 
   const stopDebate = () => {
