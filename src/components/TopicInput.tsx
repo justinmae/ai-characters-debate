@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,29 @@ interface TopicInputProps {
   isLoading?: boolean;
 }
 
+const loadingMessages = [
+  "Creating debate arena...",
+  "Generating characters...",
+  "Preparing debate stage...",
+  "Starting the debate..."
+];
+
 const TopicInput = ({ topic, setTopic, onStart, isLoading = false }: TopicInputProps) => {
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setCurrentMessageIndex(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setCurrentMessageIndex((prev) => (prev + 1) % loadingMessages.length);
+    }, 2500); // Change message every 2.5 seconds
+
+    return () => clearInterval(interval);
+  }, [isLoading]);
+
   return (
     <div className="h-[calc(100vh-12rem)] flex items-center justify-center">
       <Card className="p-6 debate-slide-in max-w-md w-full">
@@ -36,18 +58,13 @@ const TopicInput = ({ topic, setTopic, onStart, isLoading = false }: TopicInputP
               {isLoading ? (
                 <>
                   <Loader className="mr-2 h-4 w-4 animate-spin" />
-                  Preparing Debate...
+                  {loadingMessages[currentMessageIndex]}
                 </>
               ) : (
                 'Start Debate'
               )}
             </Button>
           </div>
-          {isLoading && (
-            <div className="text-sm text-muted-foreground text-center animate-pulse">
-              Generating unique characters and preparing the debate arena...
-            </div>
-          )}
         </div>
       </Card>
     </div>
