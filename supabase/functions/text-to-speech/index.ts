@@ -15,7 +15,7 @@ serve(async (req) => {
 
   try {
     const { text, voiceId } = await req.json();
-    console.log('Received request with text:', text, 'and voiceId:', voiceId);
+    console.log('Processing request for text:', text.substring(0, 50), '... with voiceId:', voiceId);
 
     if (!text) {
       throw new Error('Text is required');
@@ -23,7 +23,8 @@ serve(async (req) => {
 
     const apiKey = Deno.env.get('ELEVEN_LABS_API_KEY');
     if (!apiKey) {
-      throw new Error('ELEVEN_LABS_API_KEY is not set');
+      console.error('ELEVEN_LABS_API_KEY environment variable is not set');
+      throw new Error('ElevenLabs API key not configured');
     }
 
     console.log('Making request to ElevenLabs API...');
@@ -36,7 +37,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         text: text,
-        model_id: "eleven_multilingual_v2",
+        model_id: "eleven_monolingual_v1",
         voice_settings: {
           stability: 0.5,
           similarity_boost: 0.75,
@@ -44,28 +45,56 @@ serve(async (req) => {
       }),
     });
 
+    console.log('ElevenLabs response status:', response.status);
+    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('ElevenLabs API error:', errorText);
+      console.error('ElevenLabs API error response:', errorText);
+      
+      // Check for specific error cases
+      if (response.status === 401) {
+        throw new Error('Invalid ElevenLabs API key');
+      } else if (response.status === 429) {
+        throw new Error('ElevenLabs API rate limit exceeded');
+      }
       throw new Error(`ElevenLabs API error: ${errorText}`);
     }
 
-    console.log('Successfully received audio response from ElevenLabs');
+    console.log('Successfully received audio response');
     const audioData = await response.arrayBuffer();
-    
-    // Convert to base64
-    const bytes = new Uint8Array(audioData);
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(audioData)));
+    console.log('Audio data size:', audioData.byteLength, 'bytes');
 
-    console.log('Successfully converted audio to base64');
+    if (audioData.byteLength === 0) {
+      throw new Error('Received empty audio data from ElevenLabs');
+    }
+
+    // Convert to base64 with chunking for large files
+    const bytes = new Uint8Array(audioData);
+    let base64 = '';
+    const chunkSize = 32768;
+    
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.slice(i, Math.min(i + chunkSize, bytes.length));
+      base64 += String.fromCharCode(...chunk);
+    }
+    
+    const base64Audio = btoa(base64);
+    console.log('Successfully encoded audio to base64');
+
     return new Response(
-      JSON.stringify({ audioContent: base64 }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      JSON.stringify({ audioContent: base64Audio }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+    
   } catch (error) {
     console.error('Error in text-to-speech function:', error);
+    
+    // Send a more descriptive error response
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({
+        error: error.message,
+        details: error.stack
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
