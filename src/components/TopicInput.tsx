@@ -43,7 +43,7 @@ const TopicInput = ({ topic, setTopic, onStart, isLoading = false }: TopicInputP
   };
 
   return (
-    <div className="h-[calc(100vh-12rem)] flex items-center justify-center">
+    <div className="h-[calc(100vh-8rem)] flex items-center justify-center">
       <Card className="p-6 debate-slide-in max-w-md w-full">
         <form onSubmit={handleSubmit} className="space-y-4">
           <h2 className="text-xl font-semibold text-center">Choose a Debate Topic</h2>
