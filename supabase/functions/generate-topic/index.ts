@@ -26,7 +26,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a witty debate topic generator. Generate ONE humorous, lighthearted, and slightly absurd debate topic that would be entertaining to discuss. The topic should be fun but still debatable from different perspectives. Keep it family-friendly and avoid controversial subjects.',
+            content: 'You are a witty debate topic generator. Generate ONE humorous, lighthearted, and slightly absurd debate topic that would be entertaining to discuss. The topic should be fun but still debatable from different perspectives. Keep it family-friendly and avoid controversial subjects. DO NOT use quotation marks in your response.',
           },
           {
             role: 'user',
@@ -38,12 +38,11 @@ serve(async (req) => {
     });
 
     const data = await response.json();
-    console.log('Generated topic:', data.choices[0].message.content);
+    const topic = data.choices[0].message.content.replace(/["']/g, '').trim();
+    console.log('Generated topic:', topic);
 
     return new Response(
-      JSON.stringify({
-        topic: data.choices[0].message.content,
-      }),
+      JSON.stringify({ topic }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       },

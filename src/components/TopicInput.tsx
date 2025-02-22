@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Loader } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -64,6 +64,20 @@ const TopicInput = ({
     }
   };
 
+  const handleTextareaKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (topic.trim() && !isLoading && !isGeneratingTopic) {
+        onStart();
+      }
+    }
+  };
+
+  const adjustTextareaHeight = (element: HTMLTextAreaElement) => {
+    element.style.height = 'auto';
+    element.style.height = element.scrollHeight + 'px';
+  };
+
   return (
     <div className="h-[calc(100vh-8rem)] flex items-center justify-center bg-transparent">
       <Card className="p-6 debate-slide-in max-w-md w-full">
@@ -75,12 +89,18 @@ const TopicInput = ({
             Enter any topic you'd like the AI characters to debate about
           </p>
           <div className="space-y-2">
-            <Input 
-              placeholder={isGeneratingTopic ? "Generating topic..." : "Enter a topic..."} 
-              value={topic} 
-              onChange={e => setTopic(e.target.value)} 
-              className="w-full"
+            <Textarea 
+              placeholder={isGeneratingTopic ? "Generating topic..." : "Enter a topic..."}
+              value={topic}
+              onChange={(e) => {
+                setTopic(e.target.value);
+                adjustTextareaHeight(e.target);
+              }}
+              onKeyDown={handleTextareaKeyDown}
+              className="w-full resize-none overflow-hidden min-h-[40px]"
               disabled={isGeneratingTopic}
+              rows={1}
+              style={{ height: '40px' }}
             />
             <Button 
               type="submit" 
