@@ -15,17 +15,24 @@ serve(async (req) => {
 
   try {
     const { text, voiceId } = await req.json();
+    console.log('Received request with text:', text, 'and voiceId:', voiceId);
 
     if (!text) {
       throw new Error('Text is required');
     }
 
+    const apiKey = Deno.env.get('ELEVEN_LABS_API_KEY');
+    if (!apiKey) {
+      throw new Error('ELEVEN_LABS_API_KEY is not set');
+    }
+
+    console.log('Making request to ElevenLabs API...');
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',
       headers: {
         'Accept': 'audio/mpeg',
         'Content-Type': 'application/json',
-        'xi-api-key': Deno.env.get('ELEVEN_LABS_API_KEY') || '',
+        'xi-api-key': apiKey,
       },
       body: JSON.stringify({
         text: text,
@@ -38,30 +45,22 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`ElevenLabs API error: ${error}`);
+      const errorText = await response.text();
+      console.error('ElevenLabs API error:', errorText);
+      throw new Error(`ElevenLabs API error: ${errorText}`);
     }
 
-    // Get the audio data as an array buffer
+    console.log('Successfully received audio response from ElevenLabs');
     const audioData = await response.arrayBuffer();
     
-    // Convert to base64 without using .apply()
+    // Convert to base64
     const bytes = new Uint8Array(audioData);
-    let base64 = '';
-    const chunkSize = 32768;
-    
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      const chunk = bytes.slice(i, Math.min(i + chunkSize, bytes.length));
-      base64 += String.fromCharCode(...chunk);
-    }
-    
-    const base64Audio = btoa(base64);
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(audioData)));
 
+    console.log('Successfully converted audio to base64');
     return new Response(
-      JSON.stringify({ audioContent: base64Audio }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ audioContent: base64 }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (error) {
     console.error('Error in text-to-speech function:', error);
