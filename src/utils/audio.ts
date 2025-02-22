@@ -53,10 +53,16 @@ export const playAudioFromBase64 = (base64Audio: string): Promise<void> => {
       };
       
       audio.onerror = (event) => {
-        const error = event.target as HTMLAudioElement;
-        console.error('Audio playback error:', error.error);
-        URL.revokeObjectURL(audioUrl);
-        reject(new Error(`Audio playback failed: ${error.error?.message || 'Unknown error'}`));
+        if (event instanceof Event && event.target instanceof HTMLAudioElement) {
+          console.error('Audio playback error:', event.target.error);
+          URL.revokeObjectURL(audioUrl);
+          reject(new Error(`Audio playback failed: ${event.target.error?.message || 'Unknown error'}`));
+        } else {
+          // Handle case where error is a string or other type
+          console.error('Audio playback error:', event);
+          URL.revokeObjectURL(audioUrl);
+          reject(new Error('Audio playback failed: Unknown error'));
+        }
       };
 
       audio.onloadedmetadata = () => {
