@@ -44,7 +44,8 @@ serve(async (req) => {
 
     // Convert audio buffer to base64
     const arrayBuffer = await elevenLabsResponse.arrayBuffer();
-    const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    const uint8Array = new Uint8Array(arrayBuffer);
+    const base64Audio = btoa(String.fromCharCode.apply(null, uint8Array));
 
     return new Response(
       JSON.stringify({ audioContent: base64Audio }),
