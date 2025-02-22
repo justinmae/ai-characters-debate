@@ -5,8 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 
 interface TopicInputProps {
   topic: string;
@@ -25,26 +23,24 @@ const TopicInput = ({
 }: TopicInputProps) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isGeneratingTopic, setIsGeneratingTopic] = useState(true);
-  const [topics, setTopics] = useState<string[]>([]);
 
   useEffect(() => {
-    const generateInitialTopics = async () => {
+    const generateInitialTopic = async () => {
       try {
         const { data, error } = await supabase.functions.invoke('generate-topic');
         if (error) throw error;
-        if (data.topics) {
-          setTopics(data.topics);
-          setTopic(data.topics[0]); // Set the first topic as default
+        if (data.topic) {
+          setTopic(data.topic);
         }
       } catch (error) {
-        console.error('Error generating initial topics:', error);
+        console.error('Error generating initial topic:', error);
       } finally {
         setIsGeneratingTopic(false);
       }
     };
 
     if (!topic) {
-      generateInitialTopics();
+      generateInitialTopic();
     }
   }, []);
 
@@ -73,37 +69,15 @@ const TopicInput = ({
       <Card className="p-6 debate-slide-in max-w-md w-full">
         <form onSubmit={handleSubmit} className="space-y-4">
           <h2 className="text-xl font-semibold text-center">
-            Choose a Debate Topic
+            Тема для дебатов
           </h2>
           <p className="text-sm text-muted-foreground text-center mb-4">
-            Select one of these controversial topics or enter your own
+            Используйте сгенерированную тему или введите свою
           </p>
           
-          {isGeneratingTopic ? (
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((_, index) => (
-                <div key={index} className="h-6 bg-muted animate-pulse rounded" />
-              ))}
-            </div>
-          ) : (
-            <RadioGroup
-              value={topic}
-              onValueChange={setTopic}
-              className="space-y-3"
-            >
-              {topics.map((t, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <RadioGroupItem value={t} id={`topic-${index}`} />
-                  <Label htmlFor={`topic-${index}`} className="text-sm">{t}</Label>
-                </div>
-              ))}
-            </RadioGroup>
-          )}
-          
-          <div className="space-y-2 pt-4">
-            <p className="text-sm text-muted-foreground">Or enter your own topic:</p>
+          <div className="space-y-2">
             <Input 
-              placeholder={isGeneratingTopic ? "Generating topics..." : "Enter a custom topic..."} 
+              placeholder={isGeneratingTopic ? "Генерируем тему..." : "Введите свою тему..."} 
               value={topic} 
               onChange={e => setTopic(e.target.value)} 
               className="w-full"
@@ -122,10 +96,10 @@ const TopicInput = ({
               ) : isGeneratingTopic ? (
                 <>
                   <Loader className="mr-2 h-4 w-4 animate-spin" />
-                  Generating topics...
+                  Генерируем тему...
                 </>
               ) : (
-                'Start Debate'
+                'Начать дебаты'
               )}
             </Button>
           </div>

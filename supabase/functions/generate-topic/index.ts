@@ -16,7 +16,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Generating controversial topics with OpenAI...');
+    console.log('Generating a humorous topic with OpenAI...');
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -29,11 +29,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a debate topic generator. Generate 5 engaging, controversial debate topics that would spark interesting discussions. Each topic should be 3-7 words long. Return the topics as a numbered list, one per line. Only return the numbered list, nothing else.'
+            content: 'You are a humorous topic generator. Generate one funny, light-hearted debate topic that would create an entertaining discussion. The topic should be 3-10 words long, creative and make people smile. Return just the topic, nothing else.'
           },
           {
             role: 'user',
-            content: 'Generate 5 controversial debate topics'
+            content: 'Generate a funny debate topic'
           }
         ],
       }),
@@ -46,17 +46,11 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const rawTopics = data.choices[0].message.content.trim();
+    const topic = data.choices[0].message.content.trim();
     
-    // Parse the numbered list into an array of topics
-    const topics = rawTopics
-      .split('\n')
-      .map(line => line.replace(/^\d+\.\s*/, '').trim())
-      .filter(topic => topic.length > 0);
-    
-    console.log('Generated topics:', topics);
+    console.log('Generated topic:', topic);
 
-    return new Response(JSON.stringify({ topics }), {
+    return new Response(JSON.stringify({ topic }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
