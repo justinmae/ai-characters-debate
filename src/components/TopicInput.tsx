@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,6 +23,7 @@ const TopicInput = ({
 }: TopicInputProps) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isGeneratingTopic, setIsGeneratingTopic] = useState(true);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const generateInitialTopic = async () => {
@@ -31,6 +32,12 @@ const TopicInput = ({
         if (error) throw error;
         if (data.topic) {
           setTopic(data.topic);
+          // Adjust height after topic is set
+          setTimeout(() => {
+            if (textareaRef.current) {
+              adjustTextareaHeight(textareaRef.current);
+            }
+          }, 0);
         }
       } catch (error) {
         console.error('Error generating initial topic:', error);
@@ -90,6 +97,7 @@ const TopicInput = ({
           </p>
           <div className="space-y-2">
             <Textarea 
+              ref={textareaRef}
               placeholder={isGeneratingTopic ? "Generating topic..." : "Enter a topic..."}
               value={topic}
               onChange={(e) => {
