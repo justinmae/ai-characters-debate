@@ -30,7 +30,7 @@ const TopicInput = ({ topic, setTopic, onStart, isLoading = false }: TopicInputP
 
     const interval = setInterval(() => {
       setCurrentMessageIndex((prev) => (prev + 1) % loadingMessages.length);
-    }, 2500); // Change message every 2.5 seconds
+    }, 2500);
 
     return () => clearInterval(interval);
   }, [isLoading]);
@@ -43,10 +43,12 @@ const TopicInput = ({ topic, setTopic, onStart, isLoading = false }: TopicInputP
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex items-center justify-center">
-      <Card className="p-6 debate-slide-in max-w-md w-full">
+    <div className="h-[calc(100vh-8rem)] flex items-center justify-center bg-gradient-to-br from-indigo-50/20 to-white/90">
+      <Card className="p-6 debate-slide-in max-w-md w-full ai-border ai-glow">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <h2 className="text-xl font-semibold text-center">Choose a Debate Topic</h2>
+          <h2 className="text-xl font-semibold text-center bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
+            Choose a Debate Topic
+          </h2>
           <p className="text-sm text-muted-foreground text-center">
             Enter any topic you'd like the AI characters to debate about
           </p>
@@ -55,12 +57,12 @@ const TopicInput = ({ topic, setTopic, onStart, isLoading = false }: TopicInputP
               placeholder="Enter a topic..."
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              className="w-full"
+              className="w-full bg-white/50 border-indigo-200/30 focus:border-indigo-300/50 transition-all"
             />
             <Button 
               type="submit"
               disabled={!topic.trim() || isLoading} 
-              className="w-full"
+              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all duration-300"
             >
               {isLoading ? (
                 <>
