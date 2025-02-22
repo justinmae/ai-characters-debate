@@ -14,46 +14,18 @@ const DebateArena = () => {
   const [topic, setTopic] = useState('');
   const [isDebating, setIsDebating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<Array<{ character: number; text: string }>>([]);
+  const [messages, setMessages] = useState<Array<{ character: number; text: string; audio?: string }>>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const nextGenerationStarted = useRef(false);
+  const nextResponseData = useRef<{ text: string; audio: string; character: number } | null>(null);
 
   useEffect(() => {
     if (transcriptRef.current) {
       transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
     }
   }, [messages]);
-
-  const playMessage = async (text: string, characterNumber: number) => {
-    try {
-      const voiceId = characterNumber === 1 ? "ErXwobaYiN019PkySvjV" : "VR6AewLTigWG4xSOukaG";
-      
-      const { data, error } = await supabase.functions.invoke('text-to-speech', {
-        body: { text, voiceId }
-      });
-
-      if (error) throw error;
-      if (!data.audioContent) throw new Error('No audio content received');
-
-      setIsSpeaking(true);
-      nextGenerationStarted.current = false;
-
-      await playAudioFromBase64(data.audioContent, (progress) => {
-        // Когда достигнуто 25% воспроизведения, начинаем генерировать следующий ответ
-        if (progress >= 25 && !nextGenerationStarted.current && messages.length < 6) {
-          nextGenerationStarted.current = true;
-          generateDebateResponse(characterNumber === 1 ? 2 : 1);
-        }
-      });
-
-      setIsSpeaking(false);
-    } catch (error) {
-      console.error('Error playing message:', error);
-      setIsSpeaking(false);
-    }
-  };
 
   const generateDebateResponse = async (characterNumber: number) => {
     try {
@@ -72,15 +44,22 @@ const DebateArena = () => {
       if (error) throw error;
       if (!data.text) throw new Error('No response received');
 
-      const newMessage = {
-        character: characterNumber,
-        text: data.text
+      // Get audio for the response
+      const { data: audioData, error: audioError } = await supabase.functions.invoke('text-to-speech', {
+        body: { 
+          text: data.text, 
+          voiceId: characterNumber === 1 ? "ErXwobaYiN019PkySvjV" : "VR6AewLTigWG4xSOukaG" 
+        }
+      });
+
+      if (audioError) throw audioError;
+      if (!audioData.audioContent) throw new Error('No audio content received');
+
+      return {
+        text: data.text,
+        audio: audioData.audioContent,
+        character: characterNumber
       };
-
-      setMessages(prev => [...prev, newMessage]);
-      setIsLoading(false);
-
-      await playMessage(data.text, characterNumber);
     } catch (error) {
       console.error('Error generating debate response:', error);
       setIsLoading(false);
@@ -89,15 +68,58 @@ const DebateArena = () => {
         description: "Failed to generate debate response. Please try again.",
         variant: "destructive",
       });
+      return null;
     }
   };
 
-  const startDebate = () => {
+  const playMessage = async (text: string, audio: string, characterNumber: number) => {
+    try {
+      setIsSpeaking(true);
+      nextGenerationStarted.current = false;
+
+      // Add message to transcript immediately
+      setMessages(prev => [...prev, { character: characterNumber, text }]);
+      
+      await playAudioFromBase64(audio, (progress) => {
+        if (progress >= 25 && !nextGenerationStarted.current && messages.length < 6) {
+          nextGenerationStarted.current = true;
+          // Generate next response but don't play it yet
+          generateDebateResponse(characterNumber === 1 ? 2 : 1).then(response => {
+            if (response) {
+              nextResponseData.current = response;
+            }
+          });
+        }
+      });
+
+      setIsSpeaking(false);
+      setIsLoading(false);
+
+      // After current audio finishes, check if we have a next response ready to play
+      if (nextResponseData.current && messages.length < 6) {
+        const { text, audio, character } = nextResponseData.current;
+        nextResponseData.current = null;
+        await playMessage(text, audio, character);
+      }
+    } catch (error) {
+      console.error('Error playing message:', error);
+      setIsSpeaking(false);
+      setIsLoading(false);
+    }
+  };
+
+  const startDebate = async () => {
     if (!topic.trim()) return;
     setIsDebating(true);
     setMessages([]);
     nextGenerationStarted.current = false;
-    generateDebateResponse(1);
+    nextResponseData.current = null;
+
+    const response = await generateDebateResponse(1);
+    if (response) {
+      setIsLoading(false);
+      await playMessage(response.text, response.audio, response.character);
+    }
   };
 
   const stopDebate = () => {
@@ -107,6 +129,7 @@ const DebateArena = () => {
     setIsLoading(false);
     setTopic('');
     nextGenerationStarted.current = false;
+    nextResponseData.current = null;
   };
 
   return (
