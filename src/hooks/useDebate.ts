@@ -14,9 +14,12 @@ export const useDebate = () => {
   const [characters, setCharacters] = useState<DebateCharacter[]>([]);
   const nextGenerationStarted = useRef(false);
   const nextResponseData = useRef<{ text: string; audio: string; character: number } | null>(null);
+  const isStopping = useRef(false);
   const { toast } = useToast();
 
   const generateDebateResponse = async (characterNumber: number, currentCharacters: DebateCharacter[]) => {
+    if (isStopping.current) return null;
+    
     try {
       setIsLoading(true);
       const character = currentCharacters.find(c => c.character_number === characterNumber);
@@ -70,6 +73,8 @@ export const useDebate = () => {
   };
 
   const playMessage = async (text: string, audio: string, characterNumber: number, currentCharacters: DebateCharacter[]) => {
+    if (isStopping.current) return;
+    
     try {
       setIsSpeaking(true);
       nextGenerationStarted.current = false;
@@ -77,10 +82,12 @@ export const useDebate = () => {
       setMessages(prev => [...prev, { character: characterNumber, text }]);
       
       await playAudioFromBase64(audio, (progress) => {
+        if (isStopping.current) return;
+        
         if (progress >= 25 && !nextGenerationStarted.current && messages.length < 6) {
           nextGenerationStarted.current = true;
           generateDebateResponse(characterNumber === 1 ? 2 : 1, currentCharacters).then(response => {
-            if (response) {
+            if (response && !isStopping.current) {
               nextResponseData.current = response;
             }
           });
@@ -90,7 +97,7 @@ export const useDebate = () => {
       setIsSpeaking(false);
       setIsLoading(false);
 
-      if (nextResponseData.current && messages.length < 6) {
+      if (nextResponseData.current && messages.length < 6 && !isStopping.current) {
         const { text, audio, character } = nextResponseData.current;
         nextResponseData.current = null;
         await playMessage(text, audio, character, currentCharacters);
@@ -125,7 +132,8 @@ export const useDebate = () => {
 
   const startDebate = async () => {
     if (!topic.trim()) return;
-
+    
+    isStopping.current = false;
     setIsLoading(true);
     const generatedCharacters = await generateCharacters(topic);
     
@@ -148,15 +156,19 @@ export const useDebate = () => {
     }
   };
 
-  const stopDebate = () => {
-    stopAudio(500);
+  const stopDebate = async () => {
+    isStopping.current = true;
+    nextGenerationStarted.current = false;
+    nextResponseData.current = null;
+    
+    await stopAudio(500);
+    
     setIsDebating(false);
     setMessages([]);
     setIsLoading(false);
+    setIsSpeaking(false);
     setTopic('');
     setCharacters([]);
-    nextGenerationStarted.current = false;
-    nextResponseData.current = null;
   };
 
   return {
@@ -171,3 +183,4 @@ export const useDebate = () => {
     stopDebate
   };
 };
+

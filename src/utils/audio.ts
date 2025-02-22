@@ -101,28 +101,44 @@ export const playAudioFromBase64 = (base64Audio: string, onProgress?: (progress:
   return promise;
 };
 
-export const stopAudio = (fadeOutDuration: number = 500): void => {
-  const audioElements = document.getElementsByTagName('audio');
-  
-  Array.from(audioElements).forEach((audio) => {
-    const originalVolume = audio.volume;
-    let startTime = performance.now();
-    
-    const fadeOut = () => {
-      const currentTime = performance.now();
-      const elapsed = currentTime - startTime;
-      const percentage = 1 - (elapsed / fadeOutDuration);
+export const stopAudio = (fadeOutDuration: number = 500): Promise<void> => {
+  return new Promise((resolve) => {
+    const audioElements = document.getElementsByTagName('audio');
+    let completedCount = 0;
+    const totalElements = audioElements.length;
+
+    if (totalElements === 0) {
+      resolve();
+      return;
+    }
+
+    Array.from(audioElements).forEach((audio) => {
+      const originalVolume = audio.volume;
+      let startTime = performance.now();
       
-      if (percentage > 0) {
-        audio.volume = originalVolume * percentage;
-        requestAnimationFrame(fadeOut);
-      } else {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.volume = originalVolume;
-      }
-    };
-    
-    requestAnimationFrame(fadeOut);
+      const fadeOut = () => {
+        const currentTime = performance.now();
+        const elapsed = currentTime - startTime;
+        const percentage = 1 - (elapsed / fadeOutDuration);
+        
+        if (percentage > 0) {
+          audio.volume = originalVolume * percentage;
+          requestAnimationFrame(fadeOut);
+        } else {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.volume = originalVolume;
+          URL.revokeObjectURL(audio.src);
+          
+          completedCount++;
+          if (completedCount === totalElements) {
+            resolve();
+          }
+        }
+      };
+      
+      requestAnimationFrame(fadeOut);
+    });
   });
 };
+
