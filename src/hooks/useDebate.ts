@@ -118,7 +118,33 @@ export const useDebate = () => {
       if (error) throw error;
       if (!data.characters) throw new Error('No characters received');
 
-      return data.characters;
+      // Генерируем аватары для каждого персонажа
+      const charactersWithAvatars = await Promise.all(
+        data.characters.map(async (character: DebateCharacter) => {
+          try {
+            const { data: avatarData, error: avatarError } = await supabase.functions.invoke('generate-avatar', {
+              body: {
+                name: character.name,
+                background: character.background,
+                personality: character.personality,
+                occupation: character.occupation,
+              },
+            });
+
+            if (avatarError) throw avatarError;
+            
+            return {
+              ...character,
+              avatar_url: avatarData.url
+            };
+          } catch (avatarError) {
+            console.error('Error generating avatar:', avatarError);
+            return character;
+          }
+        })
+      );
+
+      return charactersWithAvatars;
     } catch (error) {
       console.error('Error generating characters:', error);
       toast({
@@ -183,4 +209,3 @@ export const useDebate = () => {
     stopDebate
   };
 };
-
