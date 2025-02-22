@@ -35,10 +35,17 @@ const TopicInput = ({ topic, setTopic, onStart, isLoading = false }: TopicInputP
     return () => clearInterval(interval);
   }, [isLoading]);
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (topic.trim() && !isLoading) {
+      onStart();
+    }
+  };
+
   return (
     <div className="h-[calc(100vh-12rem)] flex items-center justify-center">
       <Card className="p-6 debate-slide-in max-w-md w-full">
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <h2 className="text-xl font-semibold text-center">Choose a Debate Topic</h2>
           <p className="text-sm text-muted-foreground text-center">
             Enter any topic you'd like the AI characters to debate about
@@ -51,7 +58,7 @@ const TopicInput = ({ topic, setTopic, onStart, isLoading = false }: TopicInputP
               className="w-full"
             />
             <Button 
-              onClick={onStart} 
+              type="submit"
               disabled={!topic.trim() || isLoading} 
               className="w-full"
             >
@@ -65,7 +72,7 @@ const TopicInput = ({ topic, setTopic, onStart, isLoading = false }: TopicInputP
               )}
             </Button>
           </div>
-        </div>
+        </form>
       </Card>
     </div>
   );
