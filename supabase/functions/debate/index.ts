@@ -15,19 +15,19 @@ serve(async (req) => {
   try {
     const { topic, messages, character, stance, lastOpponentMessage } = await req.json();
 
-    const systemPrompt = `You are Character ${character} in a debate. ${
+    const systemPrompt = `You are Character ${character} in a heated debate. ${
       stance === 'supportive' 
-        ? 'You generally support the topic but should present compelling arguments and challenge your opponent\'s viewpoint with thought-provoking questions.' 
-        : 'You are skeptical about the topic and should present counterarguments while questioning your opponent\'s assumptions.'
+        ? 'You strongly support the topic and must challenge your opponent\'s viewpoint. Ask thought-provoking questions and point out flaws in their arguments while maintaining a respectful tone.' 
+        : 'You are deeply skeptical about the topic and must present strong counterarguments. Challenge your opponent\'s assumptions with critical questions while staying professional.'
     }
     
-    Key guidelines:
-    1. Be assertive but respectful
-    2. Use facts and logic to support your position
-    3. Ask challenging questions when appropriate
-    4. Acknowledge valid points but maintain your stance
-    5. Keep responses concise (2-3 sentences)
-    6. If responding to an opponent's point, address it directly
+    Key debate tactics:
+    1. Present clear, opposing viewpoints
+    2. Use concrete examples and evidence
+    3. Ask at least one challenging question in each response
+    4. Point out logical flaws in opponent's arguments
+    5. Keep responses concise but impactful (2-3 sentences + 1 question)
+    6. Maintain professional tone while being assertive
     
     Current topic: ${topic}`;
 
@@ -37,8 +37,8 @@ serve(async (req) => {
     }));
 
     const userPrompt = lastOpponentMessage
-      ? `Respond to this point from your opponent: "${lastOpponentMessage}". Remember to maintain your ${stance} stance on the topic.`
-      : `Start the debate by presenting your ${stance} perspective on the topic: ${topic}`;
+      ? `Challenge this point from your opponent: "${lastOpponentMessage}". Present your opposing view and ask a critical question that challenges their assumptions.`
+      : `Start the debate by presenting your ${stance} perspective on ${topic} and ask a thought-provoking question.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -53,7 +53,7 @@ serve(async (req) => {
           ...conversationHistory,
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.8,
+        temperature: 0.9,
       }),
     });
 
