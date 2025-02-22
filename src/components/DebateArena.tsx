@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, User } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import Character from './Character';
 import TopicInput from './TopicInput';
 import DebateTranscript from './DebateTranscript';
@@ -11,29 +13,54 @@ import DebateTranscript from './DebateTranscript';
 const DebateArena = () => {
   const [topic, setTopic] = useState('');
   const [isDebating, setIsDebating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Array<{ character: number; text: string }>>([]);
+  const { toast } = useToast();
+
+  const generateDebateResponse = async (characterNumber: number) => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase.functions.invoke('debate', {
+        body: {
+          topic,
+          messages,
+          character: characterNumber,
+        },
+      });
+
+      if (error) throw error;
+      if (!data.text) throw new Error('No response received');
+
+      const newMessage = {
+        character: characterNumber,
+        text: data.text
+      };
+
+      setMessages(prev => [...prev, newMessage]);
+      setIsLoading(false);
+
+      // Generate response from the other character after a short delay
+      if (messages.length < 6) { // Limit to 3 exchanges
+        setTimeout(() => {
+          generateDebateResponse(characterNumber === 1 ? 2 : 1);
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Error generating debate response:', error);
+      setIsLoading(false);
+      toast({
+        title: "Error",
+        description: "Failed to generate debate response. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const startDebate = () => {
     if (!topic.trim()) return;
     setIsDebating(true);
-    // Initialize debate with first message
-    const initialMessage = {
-      character: 1,
-      text: `Let's discuss the topic: ${topic}. I believe we should start by considering the main aspects of this issue.`
-    };
-    setMessages([initialMessage]);
-    simulateResponse();
-  };
-
-  const simulateResponse = () => {
-    // For now, we'll just simulate responses. Later we'll integrate with AI
-    setTimeout(() => {
-      const newMessage = {
-        character: messages.length % 2 === 0 ? 1 : 2,
-        text: `This is a simulated response to continue the debate about ${topic}.`
-      };
-      setMessages((prev) => [...prev, newMessage]);
-    }, 2000);
+    setMessages([]);
+    generateDebateResponse(1); // Start with Character 1
   };
 
   return (
@@ -54,12 +81,12 @@ const DebateArena = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 debate-slide-in">
             <Character
               name="Character 1"
-              isActive={messages.length % 2 === 0}
+              isActive={isLoading && messages.length % 2 === 0}
               lastMessage={messages.find(m => m.character === 1)?.text}
             />
             <Character
               name="Character 2"
-              isActive={messages.length % 2 === 1}
+              isActive={isLoading && messages.length % 2 === 1}
               lastMessage={messages.find(m => m.character === 2)?.text}
             />
             <div className="md:col-span-2">
