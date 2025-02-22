@@ -7,6 +7,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Process base64 conversion in chunks to prevent stack overflow
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const uint8Array = new Uint8Array(buffer);
+  const chunkSize = 0xffff;
+  let base64 = "";
+  
+  for (let i = 0; i < uint8Array.length; i += chunkSize) {
+    const chunk = uint8Array.slice(i, i + chunkSize);
+    base64 += String.fromCharCode.apply(null, chunk);
+  }
+  
+  return btoa(base64);
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -42,10 +56,9 @@ serve(async (req) => {
       throw new Error(`ElevenLabs API error: ${error}`);
     }
 
-    // Convert audio buffer to base64
+    // Convert audio buffer to base64 using chunked processing
     const arrayBuffer = await elevenLabsResponse.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-    const base64Audio = btoa(String.fromCharCode.apply(null, uint8Array));
+    const base64Audio = arrayBufferToBase64(arrayBuffer);
 
     return new Response(
       JSON.stringify({ audioContent: base64Audio }),
