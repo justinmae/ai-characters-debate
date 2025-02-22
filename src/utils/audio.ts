@@ -1,5 +1,5 @@
 
-export const playAudioFromBase64 = (base64Audio: string): Promise<void> => {
+export const playAudioFromBase64 = (base64Audio: string, onProgress?: (progress: number) => void): Promise<void> => {
   let audioElement: HTMLAudioElement | null = null;
 
   const promise = new Promise<void>((resolve, reject) => {
@@ -73,6 +73,14 @@ export const playAudioFromBase64 = (base64Audio: string): Promise<void> => {
         console.log('Audio metadata loaded, duration:', audio.duration);
       };
 
+      // Add timeupdate event for progress tracking
+      if (onProgress) {
+        audio.ontimeupdate = () => {
+          const progress = (audio.currentTime / audio.duration) * 100;
+          onProgress(progress);
+        };
+      }
+
       // Set the source and load the audio
       audio.src = audioUrl;
       console.log('Set audio source, attempting to play...');
@@ -90,7 +98,6 @@ export const playAudioFromBase64 = (base64Audio: string): Promise<void> => {
     }
   });
 
-  // Return an object with both the promise and a stop function
   return promise;
 };
 

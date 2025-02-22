@@ -18,6 +18,7 @@ const DebateArena = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const nextGenerationStarted = useRef(false);
 
   useEffect(() => {
     if (transcriptRef.current) {
@@ -37,7 +38,16 @@ const DebateArena = () => {
       if (!data.audioContent) throw new Error('No audio content received');
 
       setIsSpeaking(true);
-      await playAudioFromBase64(data.audioContent);
+      nextGenerationStarted.current = false;
+
+      await playAudioFromBase64(data.audioContent, (progress) => {
+        // Когда достигнуто 25% воспроизведения, начинаем генерировать следующий ответ
+        if (progress >= 25 && !nextGenerationStarted.current && messages.length < 6) {
+          nextGenerationStarted.current = true;
+          generateDebateResponse(characterNumber === 1 ? 2 : 1);
+        }
+      });
+
       setIsSpeaking(false);
     } catch (error) {
       console.error('Error playing message:', error);
@@ -71,10 +81,6 @@ const DebateArena = () => {
       setIsLoading(false);
 
       await playMessage(data.text, characterNumber);
-
-      if (messages.length < 6) {
-        generateDebateResponse(characterNumber === 1 ? 2 : 1);
-      }
     } catch (error) {
       console.error('Error generating debate response:', error);
       setIsLoading(false);
@@ -90,15 +96,17 @@ const DebateArena = () => {
     if (!topic.trim()) return;
     setIsDebating(true);
     setMessages([]);
+    nextGenerationStarted.current = false;
     generateDebateResponse(1);
   };
 
   const stopDebate = () => {
-    stopAudio(500); // Add a 500ms fade-out
+    stopAudio(500);
     setIsDebating(false);
     setMessages([]);
     setIsLoading(false);
     setTopic('');
+    nextGenerationStarted.current = false;
   };
 
   return (
