@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { MessageSquare } from 'lucide-react';
 import { DebateMessage } from '@/types/debate';
+import { motion } from 'framer-motion';
 
 interface DebateTranscriptProps {
   messages: DebateMessage[];
@@ -10,18 +10,20 @@ interface DebateTranscriptProps {
 const DebateTranscript = ({ messages }: DebateTranscriptProps) => {
   return (
     <div className="w-full">
-      <div className="flex items-center space-x-2 mb-4">
-        <MessageSquare className="w-5 h-5 text-primary" />
-        <h2 className="text-xl font-semibold">
-          Debate Transcript
-        </h2>
-      </div>
       <div className="space-y-4 max-h-[400px] overflow-y-auto px-4">
-        <div className="space-y-4">
+        <motion.div 
+          className="space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
           {[...messages].reverse().map((message, index) => (
-            <div
+            <motion.div
               key={index}
               className={`flex ${message.character === 1 ? 'justify-start' : 'justify-end'}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
             >
               <div
                 className={`max-w-[80%] ${
@@ -33,13 +35,13 @@ const DebateTranscript = ({ messages }: DebateTranscriptProps) => {
                 <div className={`text-xs font-medium mb-1 ${
                   message.character === 1 ? 'text-blue-700' : 'text-green-700'
                 }`}>
-                  Character {message.character}
+                  {message?.characterName || `Character ${message.character}`}
                 </div>
                 <p className="text-sm text-gray-800">{message.text}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </div>
   );
