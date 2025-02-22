@@ -14,6 +14,7 @@ const DebateArena = () => {
   const [isDebating, setIsDebating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Array<{ character: number; text: string }>>([]);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -24,6 +25,26 @@ const DebateArena = () => {
     }
   }, [messages]);
 
+  const playMessage = async (text: string, characterNumber: number) => {
+    try {
+      const voiceId = characterNumber === 1 ? "ErXwobaYiN019PkySvjV" : "VR6AewLTigWG4xSOukaG";
+      
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: { text, voiceId }
+      });
+
+      if (error) throw error;
+      if (!data.audioContent) throw new Error('No audio content received');
+
+      setIsSpeaking(true);
+      await playAudioFromBase64(data.audioContent);
+      setIsSpeaking(false);
+    } catch (error) {
+      console.error('Error playing message:', error);
+      setIsSpeaking(false);
+    }
+  };
+
   const generateDebateResponse = async (characterNumber: number) => {
     try {
       setIsLoading(true);
@@ -33,7 +54,7 @@ const DebateArena = () => {
           topic,
           messages,
           character: characterNumber,
-          stance, // Pass the stance to make characters more argumentative
+          stance,
           lastOpponentMessage: messages.length > 0 ? messages[messages.length - 1].text : null,
         },
       });
@@ -49,11 +70,12 @@ const DebateArena = () => {
       setMessages(prev => [...prev, newMessage]);
       setIsLoading(false);
 
+      // Play the new message
+      await playMessage(data.text, characterNumber);
+
       // Continue the debate if not finished
       if (messages.length < 6) { // Limit to 3 exchanges
-        setTimeout(() => {
-          generateDebateResponse(characterNumber === 1 ? 2 : 1);
-        }, 1000);
+        generateDebateResponse(characterNumber === 1 ? 2 : 1);
       }
     } catch (error) {
       console.error('Error generating debate response:', error);
@@ -112,12 +134,14 @@ const DebateArena = () => {
                 isActive={isLoading && messages.length % 2 === 0}
                 lastMessage={messages.find(m => m.character === 1)?.text}
                 role="Supportive Perspective"
+                isSpeaking={isSpeaking && messages[messages.length - 1]?.character === 1}
               />
               <Character
                 name="Character 2"
                 isActive={isLoading && messages.length % 2 === 1}
                 lastMessage={messages.find(m => m.character === 2)?.text}
                 role="Critical Perspective"
+                isSpeaking={isSpeaking && messages[messages.length - 1]?.character === 2}
               />
               <div className="md:col-span-2" ref={transcriptRef}>
                 <DebateTranscript messages={messages} />
