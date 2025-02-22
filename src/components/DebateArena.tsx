@@ -22,7 +22,7 @@ const DebateArena = () => {
 
   useEffect(() => {
     if (transcriptRef.current) {
-      transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
+      transcriptRef.current.scrollTop = 0; // Прокрутка вверх для новых сообщений
     }
   }, [messages]);
 
@@ -32,7 +32,12 @@ const DebateArena = () => {
         <DebateHeader />
 
         {!isDebating ? (
-          <TopicInput topic={topic} setTopic={setTopic} onStart={startDebate} />
+          <TopicInput 
+            topic={topic} 
+            setTopic={setTopic} 
+            onStart={startDebate} 
+            isLoading={isLoading}
+          />
         ) : (
           <ActiveDebate
             topic={topic}

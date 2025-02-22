@@ -26,20 +26,40 @@ const Character = ({
   occupation,
   avatarUrl 
 }: CharacterProps) => {
+  // Генерируем градиент на основе имени для уникальных аватаров
+  const generateGradient = (name: string) => {
+    const hash = name.split('').reduce((acc, char) => {
+      return char.charCodeAt(0) + ((acc << 5) - acc);
+    }, 0);
+    const color1 = `hsl(${hash % 360}, 70%, 80%)`;
+    const color2 = `hsl(${(hash * 2) % 360}, 70%, 70%)`;
+    return `linear-gradient(135deg, ${color1}, ${color2})`;
+  };
+
   return (
     <Card className={`character-container transition-all duration-300 ${isActive ? 'ring-2 ring-primary/20 animate-pulse' : ''}`}>
       <div className="flex items-center space-x-4 mb-4">
-        <div className={`relative rounded-full transition-colors duration-300 ${isActive ? 'ring-2 ring-primary' : ''}`}>
+        <div 
+          className={`relative w-12 h-12 rounded-full overflow-hidden transition-transform duration-300 ${
+            isActive ? 'ring-2 ring-primary transform scale-110' : ''
+          }`}
+          style={!avatarUrl ? { background: generateGradient(name) } : undefined}
+        >
           {avatarUrl ? (
             <img 
               src={avatarUrl} 
               alt={name} 
-              className="w-12 h-12 rounded-full"
+              className="w-full h-full object-cover"
             />
           ) : (
-            <div className={`p-3 rounded-full ${isActive ? 'bg-primary/10' : 'bg-muted'}`}>
-              <User className={`w-6 h-6 transition-colors duration-300 ${isActive ? 'text-primary animate-bounce' : 'text-muted-foreground'}`} />
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-lg font-semibold text-white">
+                {name.charAt(0).toUpperCase()}
+              </span>
             </div>
+          )}
+          {(isActive || isSpeaking) && (
+            <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-primary animate-pulse" />
           )}
         </div>
         <div className="flex-1">
@@ -70,7 +90,9 @@ const Character = ({
         </div>
       </div>
       {lastMessage && (
-        <p className={`text-sm text-muted-foreground line-clamp-2 transition-opacity duration-500 ${isActive ? 'typing-text opacity-70' : 'opacity-100'}`}>
+        <p className={`text-sm text-muted-foreground line-clamp-2 transition-opacity duration-500 ${
+          isActive ? 'typing-text opacity-70' : 'opacity-100'
+        }`}>
           {lastMessage}
         </p>
       )}
