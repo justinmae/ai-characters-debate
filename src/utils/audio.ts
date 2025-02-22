@@ -1,6 +1,8 @@
 
 export const playAudioFromBase64 = (base64Audio: string): Promise<void> => {
-  return new Promise((resolve, reject) => {
+  let audioElement: HTMLAudioElement | null = null;
+
+  const promise = new Promise<void>((resolve, reject) => {
     try {
       if (!base64Audio) {
         console.error('Invalid base64 audio data received');
@@ -40,6 +42,7 @@ export const playAudioFromBase64 = (base64Audio: string): Promise<void> => {
       console.log('Created audio URL:', audioUrl);
       
       const audio = new Audio();
+      audioElement = audio;
       
       // Set up event listeners before setting the source
       audio.oncanplay = () => {
@@ -49,6 +52,7 @@ export const playAudioFromBase64 = (base64Audio: string): Promise<void> => {
       audio.onended = () => {
         console.log('Audio playback completed successfully');
         URL.revokeObjectURL(audioUrl);
+        audioElement = null;
         resolve();
       };
       
@@ -84,5 +88,34 @@ export const playAudioFromBase64 = (base64Audio: string): Promise<void> => {
       console.error('Audio setup error:', error);
       reject(error);
     }
+  });
+
+  // Return an object with both the promise and a stop function
+  return promise;
+};
+
+export const stopAudio = (fadeOutDuration: number = 500): void => {
+  const audioElements = document.getElementsByTagName('audio');
+  
+  Array.from(audioElements).forEach((audio) => {
+    const originalVolume = audio.volume;
+    let startTime = performance.now();
+    
+    const fadeOut = () => {
+      const currentTime = performance.now();
+      const elapsed = currentTime - startTime;
+      const percentage = 1 - (elapsed / fadeOutDuration);
+      
+      if (percentage > 0) {
+        audio.volume = originalVolume * percentage;
+        requestAnimationFrame(fadeOut);
+      } else {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.volume = originalVolume;
+      }
+    };
+    
+    requestAnimationFrame(fadeOut);
   });
 };

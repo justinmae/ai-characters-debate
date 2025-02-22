@@ -1,10 +1,11 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, User, StopCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { playAudioFromBase64 } from '@/utils/audio';
+import { playAudioFromBase64, stopAudio } from '@/utils/audio';
 import Character from './Character';
 import TopicInput from './TopicInput';
 import DebateTranscript from './DebateTranscript';
@@ -93,6 +94,7 @@ const DebateArena = () => {
   };
 
   const stopDebate = () => {
+    stopAudio(500); // Add a 500ms fade-out
     setIsDebating(false);
     setMessages([]);
     setIsLoading(false);
