@@ -11,7 +11,7 @@ import TopicInput from './TopicInput';
 import DebateTranscript from './DebateTranscript';
 
 interface DebateCharacter {
-  id: number;
+  id?: number;
   name: string;
   age: number;
   location: string;
@@ -36,33 +36,10 @@ const DebateArena = () => {
   const nextResponseData = useRef<{ text: string; audio: string; character: number } | null>(null);
 
   useEffect(() => {
-    fetchCharacters();
-  }, []);
-
-  useEffect(() => {
     if (transcriptRef.current) {
       transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
     }
   }, [messages]);
-
-  const fetchCharacters = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('debate_characters')
-        .select('*')
-        .order('character_number');
-
-      if (error) throw error;
-      if (data) setCharacters(data);
-    } catch (error) {
-      console.error('Error fetching characters:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load debate characters",
-        variant: "destructive",
-      });
-    }
-  };
 
   const generateDebateResponse = async (characterNumber: number) => {
     try {
@@ -122,13 +99,11 @@ const DebateArena = () => {
       setIsSpeaking(true);
       nextGenerationStarted.current = false;
 
-      // Add message to transcript immediately
       setMessages(prev => [...prev, { character: characterNumber, text }]);
       
       await playAudioFromBase64(audio, (progress) => {
         if (progress >= 25 && !nextGenerationStarted.current && messages.length < 6) {
           nextGenerationStarted.current = true;
-          // Generate next response but don't play it yet
           generateDebateResponse(characterNumber === 1 ? 2 : 1).then(response => {
             if (response) {
               nextResponseData.current = response;
@@ -140,7 +115,6 @@ const DebateArena = () => {
       setIsSpeaking(false);
       setIsLoading(false);
 
-      // After current audio finishes, check if we have a next response ready to play
       if (nextResponseData.current && messages.length < 6) {
         const { text, audio, character } = nextResponseData.current;
         nextResponseData.current = null;
@@ -153,8 +127,39 @@ const DebateArena = () => {
     }
   };
 
+  const generateCharacters = async (topic: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-characters', {
+        body: { topic },
+      });
+
+      if (error) throw error;
+      if (!data.characters) throw new Error('No characters received');
+
+      return data.characters;
+    } catch (error) {
+      console.error('Error generating characters:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate debate characters. Please try again.",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
   const startDebate = async () => {
     if (!topic.trim()) return;
+
+    setIsLoading(true);
+    const generatedCharacters = await generateCharacters(topic);
+    
+    if (!generatedCharacters) {
+      setIsLoading(false);
+      return;
+    }
+
+    setCharacters(generatedCharacters);
     setIsDebating(true);
     setMessages([]);
     nextGenerationStarted.current = false;
@@ -173,6 +178,7 @@ const DebateArena = () => {
     setMessages([]);
     setIsLoading(false);
     setTopic('');
+    setCharacters([]);
     nextGenerationStarted.current = false;
     nextResponseData.current = null;
   };
@@ -206,7 +212,7 @@ const DebateArena = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {characters.map((character) => (
                 <Character
-                  key={character.id}
+                  key={character.character_number}
                   name={character.name}
                   isActive={isLoading && messages.length % 2 === character.character_number - 1}
                   lastMessage={messages.find(m => m.character === character.character_number)?.text}
