@@ -16,10 +16,10 @@ export const useDebate = () => {
   const nextResponseData = useRef<{ text: string; audio: string; character: number } | null>(null);
   const { toast } = useToast();
 
-  const generateDebateResponse = async (characterNumber: number) => {
+  const generateDebateResponse = async (characterNumber: number, currentCharacters: DebateCharacter[]) => {
     try {
       setIsLoading(true);
-      const character = characters.find(c => c.character_number === characterNumber);
+      const character = currentCharacters.find(c => c.character_number === characterNumber);
       if (!character) throw new Error('Character not found');
 
       const stance = characterNumber === 1 ? 'supportive' : 'critical';
@@ -69,7 +69,7 @@ export const useDebate = () => {
     }
   };
 
-  const playMessage = async (text: string, audio: string, characterNumber: number) => {
+  const playMessage = async (text: string, audio: string, characterNumber: number, currentCharacters: DebateCharacter[]) => {
     try {
       setIsSpeaking(true);
       nextGenerationStarted.current = false;
@@ -79,7 +79,7 @@ export const useDebate = () => {
       await playAudioFromBase64(audio, (progress) => {
         if (progress >= 25 && !nextGenerationStarted.current && messages.length < 6) {
           nextGenerationStarted.current = true;
-          generateDebateResponse(characterNumber === 1 ? 2 : 1).then(response => {
+          generateDebateResponse(characterNumber === 1 ? 2 : 1, currentCharacters).then(response => {
             if (response) {
               nextResponseData.current = response;
             }
@@ -93,7 +93,7 @@ export const useDebate = () => {
       if (nextResponseData.current && messages.length < 6) {
         const { text, audio, character } = nextResponseData.current;
         nextResponseData.current = null;
-        await playMessage(text, audio, character);
+        await playMessage(text, audio, character, currentCharacters);
       }
     } catch (error) {
       console.error('Error playing message:', error);
@@ -140,10 +140,11 @@ export const useDebate = () => {
     nextGenerationStarted.current = false;
     nextResponseData.current = null;
 
-    const response = await generateDebateResponse(1);
+    // Pass the generated characters directly to generateDebateResponse
+    const response = await generateDebateResponse(1, generatedCharacters);
     if (response) {
       setIsLoading(false);
-      await playMessage(response.text, response.audio, response.character);
+      await playMessage(response.text, response.audio, response.character, generatedCharacters);
     }
   };
 
