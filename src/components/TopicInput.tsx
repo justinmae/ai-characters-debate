@@ -69,15 +69,14 @@ const TopicInput = ({
       <Card className="p-6 debate-slide-in max-w-md w-full">
         <form onSubmit={handleSubmit} className="space-y-4">
           <h2 className="text-xl font-semibold text-center">
-            Тема для дебатов
+            Choose a Debate Topic
           </h2>
-          <p className="text-sm text-muted-foreground text-center mb-4">
-            Используйте сгенерированную тему или введите свою
+          <p className="text-sm text-muted-foreground text-center">
+            Enter any topic you'd like the AI characters to debate about
           </p>
-          
           <div className="space-y-2">
             <Input 
-              placeholder={isGeneratingTopic ? "Генерируем тему..." : "Введите свою тему..."} 
+              placeholder={isGeneratingTopic ? "Generating topic..." : "Enter a topic..."} 
               value={topic} 
               onChange={e => setTopic(e.target.value)} 
               className="w-full"
@@ -96,10 +95,10 @@ const TopicInput = ({
               ) : isGeneratingTopic ? (
                 <>
                   <Loader className="mr-2 h-4 w-4 animate-spin" />
-                  Генерируем тему...
+                  Generating topic...
                 </>
               ) : (
-                'Начать дебаты'
+                'Start Debate'
               )}
             </Button>
           </div>

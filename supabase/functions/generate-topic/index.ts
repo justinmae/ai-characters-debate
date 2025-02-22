@@ -16,7 +16,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Generating a humorous topic with OpenAI...');
+    console.log('Generating topic with OpenAI...');
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -29,11 +29,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a humorous topic generator. Generate one funny, light-hearted debate topic that would create an entertaining discussion. The topic should be 3-10 words long, creative and make people smile. Return just the topic, nothing else.'
+            content: 'You are a helpful assistant that generates interesting debate topics. Generate ONE short, engaging debate topic that would be interesting to discuss. The topic should be 3-7 words long. Return ONLY the topic, nothing else.'
           },
           {
             role: 'user',
-            content: 'Generate a funny debate topic'
+            content: 'Generate a debate topic'
           }
         ],
       }),
@@ -47,7 +47,6 @@ serve(async (req) => {
 
     const data = await response.json();
     const topic = data.choices[0].message.content.trim();
-    
     console.log('Generated topic:', topic);
 
     return new Response(JSON.stringify({ topic }), {
