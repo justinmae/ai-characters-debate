@@ -9,7 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      debate_characters: {
+        Row: {
+          age: number
+          avatar_url: string
+          background: string
+          character_number: number
+          created_at: string | null
+          id: number
+          location: string
+          name: string
+          occupation: string
+          personality: string
+          voice_id: string
+        }
+        Insert: {
+          age: number
+          avatar_url: string
+          background: string
+          character_number: number
+          created_at?: string | null
+          id?: number
+          location: string
+          name: string
+          occupation: string
+          personality: string
+          voice_id: string
+        }
+        Update: {
+          age?: number
+          avatar_url?: string
+          background?: string
+          character_number?: number
+          created_at?: string | null
+          id?: number
+          location?: string
+          name?: string
+          occupation?: string
+          personality?: string
+          voice_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

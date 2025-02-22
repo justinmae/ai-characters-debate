@@ -10,16 +10,34 @@ import Character from './Character';
 import TopicInput from './TopicInput';
 import DebateTranscript from './DebateTranscript';
 
+interface DebateCharacter {
+  id: number;
+  name: string;
+  age: number;
+  location: string;
+  occupation: string;
+  background: string;
+  personality: string;
+  avatar_url: string;
+  voice_id: string;
+  character_number: number;
+}
+
 const DebateArena = () => {
   const [topic, setTopic] = useState('');
   const [isDebating, setIsDebating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Array<{ character: number; text: string; audio?: string }>>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [characters, setCharacters] = useState<DebateCharacter[]>([]);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const nextGenerationStarted = useRef(false);
   const nextResponseData = useRef<{ text: string; audio: string; character: number } | null>(null);
+
+  useEffect(() => {
+    fetchCharacters();
+  }, []);
 
   useEffect(() => {
     if (transcriptRef.current) {
@@ -27,9 +45,31 @@ const DebateArena = () => {
     }
   }, [messages]);
 
+  const fetchCharacters = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('debate_characters')
+        .select('*')
+        .order('character_number');
+
+      if (error) throw error;
+      if (data) setCharacters(data);
+    } catch (error) {
+      console.error('Error fetching characters:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load debate characters",
+        variant: "destructive",
+      });
+    }
+  };
+
   const generateDebateResponse = async (characterNumber: number) => {
     try {
       setIsLoading(true);
+      const character = characters.find(c => c.character_number === characterNumber);
+      if (!character) throw new Error('Character not found');
+
       const stance = characterNumber === 1 ? 'supportive' : 'critical';
       const { data, error } = await supabase.functions.invoke('debate', {
         body: {
@@ -37,6 +77,12 @@ const DebateArena = () => {
           messages,
           character: characterNumber,
           stance,
+          characterInfo: {
+            name: character.name,
+            background: character.background,
+            personality: character.personality,
+            occupation: character.occupation
+          },
           lastOpponentMessage: messages.length > 0 ? messages[messages.length - 1].text : null,
         },
       });
@@ -44,11 +90,10 @@ const DebateArena = () => {
       if (error) throw error;
       if (!data.text) throw new Error('No response received');
 
-      // Get audio for the response
       const { data: audioData, error: audioError } = await supabase.functions.invoke('text-to-speech', {
         body: { 
           text: data.text, 
-          voiceId: characterNumber === 1 ? "ErXwobaYiN019PkySvjV" : "VR6AewLTigWG4xSOukaG" 
+          voiceId: character.voice_id
         }
       });
 
@@ -159,20 +204,20 @@ const DebateArena = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <Character
-                name="Character 1"
-                isActive={isLoading && messages.length % 2 === 0}
-                lastMessage={messages.find(m => m.character === 1)?.text}
-                role="Supportive Perspective"
-                isSpeaking={isSpeaking && messages[messages.length - 1]?.character === 1}
-              />
-              <Character
-                name="Character 2"
-                isActive={isLoading && messages.length % 2 === 1}
-                lastMessage={messages.find(m => m.character === 2)?.text}
-                role="Critical Perspective"
-                isSpeaking={isSpeaking && messages[messages.length - 1]?.character === 2}
-              />
+              {characters.map((character) => (
+                <Character
+                  key={character.id}
+                  name={character.name}
+                  isActive={isLoading && messages.length % 2 === character.character_number - 1}
+                  lastMessage={messages.find(m => m.character === character.character_number)?.text}
+                  role={character.occupation}
+                  isSpeaking={isSpeaking && messages[messages.length - 1]?.character === character.character_number}
+                  age={character.age}
+                  location={character.location}
+                  occupation={character.occupation}
+                  avatarUrl={character.avatar_url}
+                />
+              ))}
               <div className="md:col-span-2" ref={transcriptRef}>
                 <DebateTranscript messages={messages} />
               </div>
