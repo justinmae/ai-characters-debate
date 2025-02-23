@@ -15,7 +15,7 @@ This is a web app template.
 ## Tech Stack
 
 - Frontend: Vite, React, TypeScript, Tailwind, Shadcn, Framer Motion
-- Backend: Supabase
+- Backend: Supabase, Supabase Functions
 - State Management: React Query
 - Routing: React Router
 
@@ -148,3 +148,8 @@ Follow these rules when working on analytics.
 
 It uses PostHog for analytics.
 
+
+# CURSOR RULES
+* Log changes made and next steps to cursor.log file
+* Test your changes, build, run, check the logs, iterate
+* Don't stop iterating until it's working successfully
