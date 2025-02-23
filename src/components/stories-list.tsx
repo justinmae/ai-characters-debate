@@ -3,7 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { ArrowUpIcon, MessageSquare, ExternalLink, Star } from "lucide-react"
 import type { NewsStory, FilteredNewsStory } from "@/types/reddit-types"
-import { useNewsStories } from "@/hooks/useNewsStories"
+import { useNewsStories } from "@/hooks/use-news-stories"
 
 function isFilteredStory(story: NewsStory): story is FilteredNewsStory {
   return 'relevanceScore' in story

@@ -39,14 +39,14 @@ Comments: ${story.commentCount}
 `
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: RELEVANCE_SYSTEM_PROMPT },
         { role: 'user', content: storyContent }
       ],
       temperature: 0.3,
-      response_format: { type: 'json_object' }
-      
+      response_format: { type: 'json_object' },
+      store: true
     })
 
     const result = JSON.parse(completion.choices[0].message.content) as StoryRelevanceScore
