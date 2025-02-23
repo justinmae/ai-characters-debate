@@ -1,10 +1,7 @@
 import React from 'react';
 import NewsAnchor from './NewsAnchor';
-import NewsTranscript from './NewsTranscript';
 import { DebateCharacter, DebateMessage } from '@/types/debate';
 import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
 import { useRotatingHeadlines } from '@/hooks/useRotatingHeadlines';
 import NewsLocationTime from './NewsLocationTime';
 import { DotPattern } from './ui/dot-pattern';
@@ -15,8 +12,6 @@ interface NewsDiscussionProps {
   messages: DebateMessage[];
   isSpeaking: boolean;
   characters: DebateCharacter[];
-  transcriptRef: React.RefObject<HTMLDivElement>;
-  onStart: () => void;
 }
 
 const NewsDiscussion = ({
@@ -25,8 +20,6 @@ const NewsDiscussion = ({
   messages,
   isSpeaking,
   characters,
-  transcriptRef,
-  onStart,
 }: NewsDiscussionProps) => {
   const currentHeadline = useRotatingHeadlines();
 

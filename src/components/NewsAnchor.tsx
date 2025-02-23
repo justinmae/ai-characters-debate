@@ -57,15 +57,6 @@ const NewsAnchor = ({
         isSpeaking && "text-primary"
       )}>{name}</h3>
       
-      {/* News ticker - always visible */}
-      {/* <div className="fixed bottom-0 left-0 w-full bg-black/80 py-4 text-white z-50">
-        <p className={cn(
-          "text-lg news-ticker",
-          !lastMessage && "opacity-0" // Hide text but keep the black bar
-        )}>
-          {lastMessage || "Standing by..."}
-        </p>
-      </div> */}
     </div>
   );
 };

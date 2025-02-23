@@ -207,6 +207,15 @@ export const useDebate = () => {
         return [...prev, { character: characterNumber, text }];
       });
 
+      // Start generating next response before playing current audio
+      let nextResponsePromise: Promise<{ text: string; audio: string; character: number } | null> | null = null;
+
+      if (currentMessageCount < 2) {
+        const nextCharacter = characterNumber === 1 ? 2 : 1;
+        nextResponsePromise = generateDebateResponse(nextCharacter, currentCharacters, currentTopicRef.current);
+      }
+
+      // Play current audio
       await playAudioFromBase64(audio);
 
       console.log('Current message count:', currentMessageCount);
@@ -219,7 +228,6 @@ export const useDebate = () => {
 
         try {
           const newTopic = await getNewTopic();
-
           // Reset all state before starting new debate
           setMessages([]);
           setTopic(newTopic);
@@ -248,9 +256,9 @@ export const useDebate = () => {
 
       setIsSpeaking(false);
 
-      if (!isStopping.current) {
-        const nextCharacter = characterNumber === 1 ? 2 : 1;
-        const response = await generateDebateResponse(nextCharacter, currentCharacters, currentTopicRef.current);
+      // Use pre-generated response if available
+      if (!isStopping.current && nextResponsePromise) {
+        const response = await nextResponsePromise;
         if (response) {
           await playMessage(response.text, response.audio, response.character, currentCharacters);
         }

@@ -109,7 +109,7 @@ export const stopAudio = (fadeOutDuration: number = 500): Promise<void> => {
 
     Array.from(audioElements).forEach((audio) => {
       const originalVolume = audio.volume;
-      let startTime = performance.now();
+      const startTime = performance.now();
 
       const fadeOut = () => {
         const currentTime = performance.now();
