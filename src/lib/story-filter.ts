@@ -1,4 +1,4 @@
-import type { NewsStory, FilteredNewsStory, StoryRelevanceScore, StoryTopic } from '@/types/reddit-types'
+import type { NewsStory, StoryRelevanceScore } from '@/types/reddit-types'
 import { openai } from './openai'
 
 const RELEVANCE_SYSTEM_PROMPT = `You are a news curator responsible for analyzing and scoring news stories.
@@ -21,6 +21,14 @@ Respond in JSON format with:
   "explanation": string
 }`
 
+export type StoryTopic = 'technology' | 'politics' | 'business' | 'science' | 'health' | 'entertainment' | 'sports' | 'other';
+
+export interface FilteredNewsStory extends NewsStory {
+  relevanceScore: number;
+  topics: StoryTopic[];
+  isRelevant: boolean;
+}
+
 export class StoryFilterError extends Error {
   constructor(message: string) {
     super(message)
@@ -37,36 +45,54 @@ Subreddit: ${story.subreddit}
 Score: ${story.score}
 Comments: ${story.commentCount}
 `
+    console.log('Analyzing story:', {
+      id: story.id,
+      title: story.title.substring(0, 50) + '...'
+    });
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       messages: [
         { role: 'system', content: RELEVANCE_SYSTEM_PROMPT },
         { role: 'user', content: storyContent }
       ],
-      temperature: 0.3,
+      temperature: 0,
       response_format: { type: 'json_object' },
       store: true
     })
 
+    console.log('OpenAI response:', completion.choices[0].message.content);
+
     const result = JSON.parse(completion.choices[0].message.content) as StoryRelevanceScore
-    
+
+    console.log('Parsed result:', result);
+
     // Validate the response
     if (
       typeof result.score !== 'number' ||
       result.score < 1 ||
       result.score > 10 ||
       !Array.isArray(result.topics) ||
-      !result.topics.every((topic): topic is StoryTopic => 
+      !result.topics.every((topic): topic is StoryTopic =>
         ['technology', 'politics', 'business', 'science', 'health', 'entertainment', 'sports', 'other'].includes(topic)
       ) ||
       typeof result.explanation !== 'string'
     ) {
+      console.error('Validation failed:', {
+        hasScore: typeof result.score === 'number',
+        scoreInRange: result.score >= 1 && result.score <= 10,
+        hasTopicsArray: Array.isArray(result.topics),
+        validTopics: result.topics?.every(topic =>
+          ['technology', 'politics', 'business', 'science', 'health', 'entertainment', 'sports', 'other'].includes(topic)
+        ),
+        hasExplanation: typeof result.explanation === 'string'
+      });
       throw new StoryFilterError('Invalid response format from OpenAI')
     }
 
     return result
   } catch (error) {
+    console.error('Error in analyzeStory:', error);
     throw new StoryFilterError(
       error instanceof Error ? error.message : 'Failed to analyze story'
     )
@@ -94,7 +120,7 @@ export async function filterStories(
   const filteredStories = sfw_stories
     .map((story, index) => {
       const result = analysisResults[index]
-      
+
       if (result.status === 'rejected') {
         console.error(`Failed to analyze story ${story.id}:`, result.reason)
         return null
@@ -108,8 +134,16 @@ export async function filterStories(
         isRelevant: analysis.score >= minRelevanceScore
       }
     })
-    .filter((story): story is FilteredNewsStory => 
-      story !== null && story.isRelevant
+    .filter((story: NewsStory & Partial<FilteredNewsStory>): story is FilteredNewsStory =>
+      story !== null &&
+      'isRelevant' in story &&
+      'topics' in story &&
+      'relevanceScore' in story &&
+      story.isRelevant &&
+      Array.isArray(story.topics) &&
+      story.topics.every((topic): topic is StoryTopic =>
+        ['technology', 'politics', 'business', 'science', 'health', 'entertainment', 'sports', 'other'].includes(topic)
+      )
     )
     .sort((a, b) => b.relevanceScore - a.relevanceScore)
     .slice(0, maxStories)
