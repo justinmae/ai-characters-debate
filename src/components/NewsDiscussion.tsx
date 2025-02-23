@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import NewsAnchor from './NewsAnchor';
 import { DebateCharacter, DebateMessage } from '@/types/debate';
 import { Loader2 } from "lucide-react";
@@ -22,6 +22,30 @@ const NewsDiscussion = ({
   characters,
 }: NewsDiscussionProps) => {
   const currentHeadline = useRotatingHeadlines();
+  const [displayedTopic, setDisplayedTopic] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    if (!topic) return;
+
+    setIsTyping(true);
+    setDisplayedTopic('');
+
+    const truncatedTopic = topic.length > 128 ? topic.substring(0, 128) + '...' : topic;
+    let currentIndex = 0;
+
+    const typingInterval = setInterval(() => {
+      if (currentIndex < truncatedTopic.length) {
+        setDisplayedTopic(prev => prev + truncatedTopic[currentIndex]);
+        currentIndex++;
+      } else {
+        clearInterval(typingInterval);
+        setIsTyping(false);
+      }
+    }, 30); // Adjust typing speed here (milliseconds)
+
+    return () => clearInterval(typingInterval);
+  }, [topic]);
 
   if (!characters.length || !topic) {
     return (
@@ -65,8 +89,9 @@ const NewsDiscussion = ({
                 <div className="bg-red-600 text-white px-3 py-1 font-bold text-sm">
                   LIVE
                 </div>
-                <h2 className="text-4xl font-bold uppercase tracking-wide text-white">
-                  {topic.length > 128 ? topic.substring(0, 128) + '...' : topic}
+                <h2 className="text-4xl font-bold uppercase tracking-wide text-white typing-text">
+                  {displayedTopic}
+                  {isTyping && <span className="typing-animation" />}
                 </h2>
               </div>
             </div>
