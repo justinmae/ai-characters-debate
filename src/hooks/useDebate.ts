@@ -1,9 +1,10 @@
-
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { DebateCharacter, DebateMessage } from '@/types/debate';
 import { playAudioFromBase64, stopAudio } from '@/utils/audio';
+import { FIXED_CHARACTERS } from '@/constants/characters';
+import { newsQueue } from '@/lib/news-queue';
 
 export const useDebate = () => {
   const [topic, setTopic] = useState('');
@@ -16,10 +17,55 @@ export const useDebate = () => {
   const nextResponseData = useRef<{ text: string; audio: string; character: number } | null>(null);
   const isStopping = useRef(false);
   const { toast } = useToast();
+  const [currentNews, setCurrentNews] = useState(null);
+  const [exchangeCount, setExchangeCount] = useState(0);
+  const maxExchanges = useRef(Math.floor(Math.random() * 3) + 1);
+
+  const initializeDebate = async () => {
+    try {
+      const news = await newsQueue.getCurrentNews();
+      if (news) {
+        setCurrentNews(news);
+        setTopic(news.title);
+      } else {
+        console.error('No news available');
+        toast({
+          title: "Error",
+          description: "No news available to discuss",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error initializing debate:', error);
+      toast({
+        title: "Error",
+        description: "Failed to initialize debate",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const startDebate = async () => {
+    setCharacters(FIXED_CHARACTERS);
+    await initializeDebate();
+    setIsDebating(true);
+    setIsLoading(true);
+    setMessages([]);
+    nextGenerationStarted.current = false;
+    nextResponseData.current = null;
+
+    const response = await generateDebateResponse(1, FIXED_CHARACTERS);
+    if (response) {
+      setIsLoading(false);
+      await playMessage(response.text, response.audio, response.character, FIXED_CHARACTERS);
+    }
+  };
 
   const generateDebateResponse = async (characterNumber: number, currentCharacters: DebateCharacter[]) => {
     if (isStopping.current) return null;
-    
+
+    console.log('Generating debate response for character:', characterNumber);
+
     try {
       setIsLoading(true);
       const character = currentCharacters.find(c => c.character_number === characterNumber);
@@ -46,8 +92,8 @@ export const useDebate = () => {
       if (!data.text) throw new Error('No response received');
 
       const { data: audioData, error: audioError } = await supabase.functions.invoke('text-to-speech', {
-        body: { 
-          text: data.text, 
+        body: {
+          text: data.text,
           voiceId: character.voice_id
         }
       });
@@ -74,16 +120,18 @@ export const useDebate = () => {
 
   const playMessage = async (text: string, audio: string, characterNumber: number, currentCharacters: DebateCharacter[]) => {
     if (isStopping.current) return;
-    
+
+    console.log('Playing message for character:', characterNumber);
+
     try {
       setIsSpeaking(true);
       nextGenerationStarted.current = false;
 
       setMessages(prev => [...prev, { character: characterNumber, text }]);
-      
+
       await playAudioFromBase64(audio, (progress) => {
         if (isStopping.current) return;
-        
+
         if (progress >= 25 && !nextGenerationStarted.current && messages.length < 6) {
           nextGenerationStarted.current = true;
           generateDebateResponse(characterNumber === 1 ? 2 : 1, currentCharacters).then(response => {
@@ -102,6 +150,8 @@ export const useDebate = () => {
         nextResponseData.current = null;
         await playMessage(text, audio, character, currentCharacters);
       }
+
+      setExchangeCount(prev => prev + 1);
     } catch (error) {
       console.error('Error playing message:', error);
       setIsSpeaking(false);
@@ -109,103 +159,13 @@ export const useDebate = () => {
     }
   };
 
-  const generateCharacters = async (topic: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-characters', {
-        body: { topic },
-      });
-
-      if (error) throw error;
-      if (!data.characters) throw new Error('No characters received');
-
-      // Генерируем аватары для каждого персонажа
-      const charactersWithAvatars = await Promise.all(
-        data.characters.map(async (character: DebateCharacter) => {
-          try {
-            const { data: avatarData, error: avatarError } = await supabase.functions.invoke('generate-avatar', {
-              body: {
-                name: character.name,
-                background: character.background,
-                personality: character.personality,
-                occupation: character.occupation,
-              },
-            });
-
-            if (avatarError) throw avatarError;
-            
-            return {
-              ...character,
-              avatar_url: avatarData.url
-            };
-          } catch (avatarError) {
-            console.error('Error generating avatar:', avatarError);
-            return character;
-          }
-        })
-      );
-
-      return charactersWithAvatars;
-    } catch (error) {
-      console.error('Error generating characters:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate debate characters. Please try again.",
-        variant: "destructive",
-      });
-      return null;
-    }
-  };
-
-  const startDebate = async () => {
-    if (!topic.trim()) return;
-    
-    isStopping.current = false;
-    setIsLoading(true);
-    const generatedCharacters = await generateCharacters(topic);
-    
-    if (!generatedCharacters) {
-      setIsLoading(false);
-      return;
-    }
-
-    setCharacters(generatedCharacters);
-    setIsDebating(true);
-    setMessages([]);
-    nextGenerationStarted.current = false;
-    nextResponseData.current = null;
-
-    // Pass the generated characters directly to generateDebateResponse
-    const response = await generateDebateResponse(1, generatedCharacters);
-    if (response) {
-      setIsLoading(false);
-      await playMessage(response.text, response.audio, response.character, generatedCharacters);
-    }
-  };
-
-  const stopDebate = async () => {
-    isStopping.current = true;
-    nextGenerationStarted.current = false;
-    nextResponseData.current = null;
-    
-    await stopAudio(500);
-    
-    setIsDebating(false);
-    setMessages([]);
-    setIsLoading(false);
-    setIsSpeaking(false);
-    setTopic('');
-    setCharacters([]);
-  };
-
   return {
     topic,
-    setTopic,
     isDebating,
     isLoading,
     messages,
     isSpeaking,
     characters,
-    startDebate,
-    stopDebate
+    startDebate
   };
 };

@@ -1,8 +1,5 @@
-
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { StopCircle } from 'lucide-react';
-import Character from './Character';
+import Character from './NewsAnchor';
 import DebateTranscript from './DebateTranscript';
 import { DebateCharacter, DebateMessage } from '@/types/debate';
 
@@ -12,7 +9,6 @@ interface ActiveDebateProps {
   messages: DebateMessage[];
   isSpeaking: boolean;
   characters: DebateCharacter[];
-  onStop: () => void;
   transcriptRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -22,21 +18,12 @@ const ActiveDebate = ({
   messages,
   isSpeaking,
   characters,
-  onStop,
   transcriptRef,
 }: ActiveDebateProps) => {
   return (
     <div className="space-y-8 debate-slide-in">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Current Topic: {topic}</h2>
-        <Button
-          variant="destructive"
-          onClick={onStop}
-          className="flex items-center gap-2"
-        >
-          <StopCircle className="w-4 h-4" />
-          Stop Debate
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

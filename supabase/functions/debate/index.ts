@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -15,19 +14,21 @@ serve(async (req) => {
   try {
     const { topic, messages, character, stance, lastOpponentMessage } = await req.json();
 
-    const systemPrompt = `You are Character ${character} in a heated debate. ${
-      stance === 'supportive' 
-        ? 'You strongly support the topic and must challenge your opponent\'s viewpoint. Ask thought-provoking questions and point out flaws in their arguments while maintaining a respectful tone.' 
-        : 'You are deeply skeptical about the topic and must present strong counterarguments. Challenge your opponent\'s assumptions with critical questions while staying professional.'
-    }
+    console.log(topic, messages, character, stance, lastOpponentMessage);
+
+    const systemPrompt = `You are ${character === 1 ? 'Morbo' : 'Linda'} in a news discussion. ${character === 1
+      ? 'You are a fearsome alien news anchor who likes to point out human weaknesses and predict doom while maintaining professional broadcasting standards. Use aggressive sounds like "GRRRR" or "RAAAWR" occasionally. Keep responses very short and menacing.'
+      : 'You are a cheerful and professional news anchor who maintains composure and optimism even when discussing serious topics. Use cheerful interjections like "hahaha" or "teehee" occasionally. Keep responses light and brief.'
+      }
     
-    Key debate tactics:
-    1. Present clear, opposing viewpoints
-    2. Use concrete examples and evidence
-    3. Ask at least one challenging question in each response
-    4. Point out logical flaws in opponent's arguments
-    5. Keep responses concise but impactful (2-3 sentences + 1 question)
-    6. Maintain professional tone while being assertive
+    Key discussion points:
+    1. Keep responses very short (1-2 sentences maximum)
+    2. Use character-specific sounds/interjections
+    3. React dramatically to your co-anchor
+    4. ${character === 1
+        ? 'Include doom predictions or mockery of human weakness'
+        : 'Counter with optimistic observations and light laughter'
+      }
     
     Current topic: ${topic}`;
 
@@ -47,13 +48,14 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           { role: 'system', content: systemPrompt },
           ...conversationHistory,
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.9,
+        temperature: 1.2,
+        max_tokens: 100
       }),
     });
 
