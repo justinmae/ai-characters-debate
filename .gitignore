@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 .env
-news_database.csv
+# news_database.csv
