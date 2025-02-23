@@ -1,4 +1,3 @@
-
 export interface DebateCharacter {
   id?: number;
   name: string;
@@ -10,6 +9,7 @@ export interface DebateCharacter {
   avatar_url: string;
   voice_id: string;
   character_number: number;
+  system_prompt: string;
 }
 
 export interface DebateMessage {

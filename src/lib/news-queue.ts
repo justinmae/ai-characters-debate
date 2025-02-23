@@ -10,11 +10,33 @@ export class NewsQueue {
     private queue: NewsItem[] = [];
     private filePath: string = '/news_database.csv';
     private isLoading: boolean = false;
-    private loadingPromise: Promise<void> | null = null;
+    public loadingPromise: Promise<void> | null = null;
+    private usedNewsIds: Set<number>;
+    private readonly STORAGE_KEY = 'newsQueue_usedIds';
 
     constructor() {
         console.log('NewsQueue: Initializing...');
+        // Load used IDs from localStorage
+        const savedIds = localStorage.getItem(this.STORAGE_KEY);
+        this.usedNewsIds = new Set(savedIds ? JSON.parse(savedIds) : []);
         this.loadingPromise = this.loadNews();
+    }
+
+    private saveUsedIds() {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify([...this.usedNewsIds]));
+    }
+
+    private clearUsedIds() {
+        this.usedNewsIds.clear();
+        localStorage.removeItem(this.STORAGE_KEY);
+    }
+
+    private shuffleArray<T>(array: T[]): T[] {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
     }
 
     private async loadNews() {
@@ -23,38 +45,39 @@ export class NewsQueue {
 
         console.log('NewsQueue: Starting to load news from:', this.filePath);
         try {
-            console.log('NewsQueue: Attempting to fetch CSV file...');
             const response = await fetch(this.filePath);
-            console.log('NewsQueue: Fetch response status:', response.status);
-
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const csvText = await response.text();
-            console.log('NewsQueue: CSV content length:', csvText.length);
-            console.log('NewsQueue: First 100 chars of CSV:', csvText.substring(0, 100));
-
-            console.log('NewsQueue: Converting CSV to JSON...');
             const jsonArray = await csvtojson({
                 noheader: true,
                 headers: ['title', 'description']
             }).fromString(csvText);
-            console.log('NewsQueue: JSON array length:', jsonArray.length);
-            console.log('NewsQueue: First JSON item:', JSON.stringify(jsonArray[0]));
 
-            this.queue = jsonArray.map((item, index) => {
-                console.log('NewsQueue: Processing item:', item);
-                return {
+            const newsItems = jsonArray
+                .map((item, index) => ({
                     id: index + 1,
                     title: item.title.replace(/^"|"$/g, ''),
                     description: item.description.replace(/^"|"$/g, '')
-                };
-            });
+                }))
+                .filter(item => !this.usedNewsIds.has(item.id));
+
+            if (newsItems.length === 0) {
+                this.clearUsedIds();
+                this.queue = this.shuffleArray(jsonArray.map((item, index) => ({
+                    id: index + 1,
+                    title: item.title.replace(/^"|"$/g, ''),
+                    description: item.description.replace(/^"|"$/g, '')
+                })));
+            } else {
+                this.queue = this.shuffleArray(newsItems);
+            }
+
             console.log('NewsQueue: Successfully loaded news items:', this.queue.length);
         } catch (error) {
             console.error('NewsQueue: Error loading news:', error);
-            console.error('NewsQueue: Error stack:', error.stack);
             this.queue = [
                 {
                     id: 1,
@@ -62,20 +85,30 @@ export class NewsQueue {
                     description: "Scientists announce revolutionary advancement in solar power efficiency."
                 }
             ];
-            console.log('NewsQueue: Loaded fallback news items');
         } finally {
             this.isLoading = false;
         }
     }
 
-    public async getCurrentNews(): Promise<NewsItem | null> {
-        if (this.loadingPromise) {
-            await this.loadingPromise;
+    getCurrentNews = async (): Promise<NewsItem | null> => {
+        // If queue is empty, wait for news to load
+        if (this.queue.length === 0) {
+            await this.loadNews();
         }
-        const currentNews = this.queue.length > 0 ? this.queue[0] : null;
-        console.log('NewsQueue: Getting current news:', currentNews);
+
+        if (this.queue.length === 0) {
+            return null;
+        }
+
+        const currentNews = this.queue.shift() || null;
+        if (currentNews) {
+            this.usedNewsIds.add(currentNews.id);
+            this.saveUsedIds();
+        }
+
+        // Don't start loading new news here since we want to use all items first
         return currentNews;
-    }
+    };
 
     public removeCurrentNews() {
         if (this.queue.length > 0) {

@@ -16,9 +16,9 @@ const NewsAnchor = ({
   avatarUrl 
 }: NewsAnchorProps) => {
   return (
-    <div className="flex flex-col items-center space-y-4">
+    <div className="flex flex-col items-center space-y-6">
       <div className={cn(
-        "relative w-40 h-40 rounded-full overflow-hidden bg-secondary",
+        "relative w-56 h-56 rounded-full overflow-hidden bg-secondary",
         isSpeaking && "animate-[glow_2s_ease-in-out_infinite]"
       )}>
         {/* Pulsing ring animation when speaking */}
@@ -53,31 +53,19 @@ const NewsAnchor = ({
       </div>
       
       <h3 className={cn(
-        "text-2xl font-semibold",
+        "text-3xl font-semibold",
         isSpeaking && "text-primary"
       )}>{name}</h3>
       
-      <p className="text-base text-muted-foreground">
-        {isActive ? (
-          <span className="inline-flex items-center">
-            Preparing
-            <span className="typing-animation ml-1">...</span>
-          </span>
-        ) : isSpeaking ? (
-          <span className="inline-flex items-center text-primary animate-pulse">
-            On Air
-            <span className="typing-animation ml-1">...</span>
-          </span>
-        ) : 'Standing By'}
-      </p>
-
-      {lastMessage && (
-        <div className="fixed bottom-0 left-0 w-full bg-black/80 py-2 text-white">
-          <p className="text-sm news-ticker">
-            {lastMessage}
-          </p>
-        </div>
-      )}
+      {/* News ticker - always visible */}
+      {/* <div className="fixed bottom-0 left-0 w-full bg-black/80 py-4 text-white z-50">
+        <p className={cn(
+          "text-lg news-ticker",
+          !lastMessage && "opacity-0" // Hide text but keep the black bar
+        )}>
+          {lastMessage || "Standing by..."}
+        </p>
+      </div> */}
     </div>
   );
 };

@@ -5,6 +5,9 @@ import { DebateCharacter, DebateMessage } from '@/types/debate';
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRotatingHeadlines } from '@/hooks/useRotatingHeadlines';
+import NewsLocationTime from './NewsLocationTime';
+import { DotPattern } from './ui/dot-pattern';
 
 interface NewsDiscussionProps {
   topic: string;
@@ -25,6 +28,8 @@ const NewsDiscussion = ({
   transcriptRef,
   onStart,
 }: NewsDiscussionProps) => {
+  const currentHeadline = useRotatingHeadlines();
+
   if (!characters.length || !topic) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -35,24 +40,16 @@ const NewsDiscussion = ({
 
   return (
     <div className="space-y-8 debate-slide-in min-h-screen flex flex-col">
-      <AnimatePresence mode="wait">
-        <motion.div 
-          key={topic}
-          className="flex justify-center items-center py-6 bg-gradient-to-r from-transparent via-accent/50 to-transparent"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h2 className="text-2xl font-bold text-center max-w-3xl mx-auto px-4">
-            {topic}
-          </h2>
-        </motion.div>
-      </AnimatePresence>
-
+      <DotPattern 
+        width={20}
+        height={20}
+        className="opacity-50"
+        glow
+      />
+      <NewsLocationTime />
       <div className="flex-1 flex flex-col">
-        <div className="flex-1 flex items-center justify-center mb-8">
-          <div className="flex gap-12 justify-center">
+        <div className="flex-1 flex items-center justify-center mt-12 mb-20">
+          <div className="flex gap-16 justify-center">
             {characters.map((character) => (
               <NewsAnchor
                 key={character.character_number}
@@ -66,9 +63,39 @@ const NewsDiscussion = ({
           </div>
         </div>
         
-        {/* <div ref={transcriptRef}>
-          <NewsTranscript messages={messages} />
-        </div> */}
+        {/* CNN-style news chyron */}
+        <div className="fixed bottom-0 left-0 right-0 z-50">
+          {/* Main headline - limited width */}
+          <div className="flex justify-center">
+            <div className="max-w-4xl w-full bg-black rounded-lg">
+              <div className="flex items-center gap-4 py-4">
+                <div className="bg-red-600 text-white px-3 py-1 font-bold text-sm">
+                  LIVE
+                </div>
+                <h2 className="text-4xl font-bold uppercase tracking-wide text-white">
+                  {topic.length > 128 ? topic.substring(0, 128) + '...' : topic}
+                </h2>
+              </div>
+            </div>
+          </div>
+          
+          {/* Spacer */}
+          <div className="h-12 bg-white" />
+          
+          {/* News ticker - full width */}
+          <div className="w-full bg-black overflow-hidden whitespace-nowrap">
+            <div className="inline-flex animate-[tickerScroll_240s_linear_infinite] py-4">
+              {/* Duplicate the headline string twice to ensure smooth infinite loop */}
+              {[1, 2].map((_, i) => (
+                <div key={i} className="inline-block whitespace-nowrap leading-8">
+                  <span className="text-white text-xl font-medium">
+                    {currentHeadline} • AI NEWS NETWORK • 
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
