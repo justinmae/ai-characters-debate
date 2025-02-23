@@ -1,0 +1,150 @@
+# Project Instructions
+
+Use specification and guidelines as you build the app.
+
+Write the complete code for every step. Do not get lazy.
+
+Your goal is to completely finish whatever I ask for.
+
+You will see <ai_context> tags in the code. These are context tags that you should use to help you understand the codebase.
+
+## Overview
+
+This is a web app template.
+
+## Tech Stack
+
+- Frontend: Vite, React, TypeScript, Tailwind, Shadcn, Framer Motion
+- Backend: Supabase
+- State Management: React Query
+- Routing: React Router
+
+## Project Structure
+
+- `src` - Source code
+  - `components` - Shared components
+    - `ui` - UI components
+    - `utilities` - Utility components
+  - `lib` - Library code
+    - `hooks` - Custom hooks
+  - `pages` - Page components
+  - `types` - Type definitions
+  - `utils` - Utility functions
+
+## Rules
+
+Follow these rules when building the app.
+
+### General Rules
+
+- Use `@` to import anything from the app unless otherwise specified
+- Use kebab case for all files and folders unless otherwise specified
+- Don't update shadcn components unless otherwise specified
+
+#### Env Rules
+
+- If you update environment variables, update the `.env.example` file
+- All environment variables should go in `.env.local`
+- Do not expose environment variables to the frontend
+- Use `VITE_` prefix for environment variables that need to be accessed from the frontend
+- You may import environment variables by using `import.meta.env.VARIABLE_NAME`
+
+#### Type Rules
+
+Follow these rules when working with types.
+
+- When importing types, use `@/types`
+- Name files like `example-types.ts`
+- All types should go in `types`
+- Make sure to export the types in `types/index.ts`
+- Prefer interfaces over type aliases
+
+### Frontend Rules
+
+Follow these rules when working on the frontend.
+
+It uses Vite, React, TypeScript, Tailwind, Shadcn, and Framer Motion.
+
+#### General Rules
+
+- Use `lucide-react` for icons
+
+#### Components
+
+- Use divs instead of other html tags unless otherwise specified
+- Separate the main parts of a component's html with an extra blank line for visual spacing
+
+##### Organization
+
+- All components be named using kebab case like `example-component.tsx` unless otherwise specified
+- Put components in `/components` from the root if shared components
+
+##### Data Fetching
+
+- Use React Query for data fetching and mutations
+- Handle loading and error states appropriately
+
+Example of a component with data fetching:
+
+```tsx
+"use client"
+
+import { useQuery } from "@tanstack/react-query"
+
+interface ExampleComponentProps {
+  initialData: any[]
+}
+
+export default function ExampleComponent({
+  initialData
+}: ExampleComponentProps) {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["example"],
+    queryFn: () => fetch("/api/example").then(res => res.json()),
+    initialData
+  })
+
+  if (isLoading) return <div>Loading...</div>
+  if (error) return <div>Error: {error.message}</div>
+
+  return <div>{data.length} items</div>
+}
+```
+
+### Backend Rules
+
+Follow these rules when working on the backend.
+
+It uses Supabase.
+
+#### General Rules
+
+- Use Supabase client for data access
+- Handle errors appropriately
+- Use TypeScript types for all database operations
+
+Example of a Supabase query:
+
+```ts
+import { supabase } from "@/lib/supabase"
+import type { Database } from "@/types/supabase"
+
+type Todo = Database["public"]["Tables"]["todos"]["Row"]
+
+export async function getTodos(): Promise<Todo[]> {
+  const { data, error } = await supabase
+    .from("todos")
+    .select("*")
+    .order("created_at", { ascending: false })
+
+  if (error) throw error
+  return data
+}
+```
+
+### Analytics Rules
+
+Follow these rules when working on analytics.
+
+It uses PostHog for analytics.
+
