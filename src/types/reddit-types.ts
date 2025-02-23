@@ -9,6 +9,7 @@ export interface RedditPost {
   num_comments: number
   subreddit: string
   permalink: string
+  over_18: boolean
 }
 
 export interface RedditApiResponse {
@@ -34,4 +35,19 @@ export interface NewsStory {
   commentCount: number
   subreddit: string
   redditUrl: string
+  isNsfw: boolean
+}
+
+export interface FilteredNewsStory extends NewsStory {
+  relevanceScore: number
+  topics: string[]
+  isRelevant: boolean
+}
+
+export type StoryTopic = 'technology' | 'politics' | 'business' | 'science' | 'health' | 'entertainment' | 'sports' | 'other'
+
+export interface StoryRelevanceScore {
+  score: number
+  topics: StoryTopic[]
+  explanation: string
 } 

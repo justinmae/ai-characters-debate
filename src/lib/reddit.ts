@@ -36,7 +36,8 @@ export async function fetchTopPosts(limit = 20): Promise<NewsStory[]> {
       timestamp: new Date(child.data.created_utc * 1000),
       commentCount: child.data.num_comments,
       subreddit: child.data.subreddit,
-      redditUrl: `${REDDIT_API_BASE}${child.data.permalink}`
+      redditUrl: `${REDDIT_API_BASE}${child.data.permalink}`,
+      isNsfw: child.data.over_18
     }))
   } catch (error) {
     if (error instanceof RedditApiError) {

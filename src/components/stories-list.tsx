@@ -1,17 +1,31 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { ArrowUpIcon, MessageSquare, ExternalLink } from "lucide-react"
-import type { NewsStory } from "@/types/reddit-types"
+import { Badge } from "@/components/ui/badge"
+import { ArrowUpIcon, MessageSquare, ExternalLink, Star } from "lucide-react"
+import type { NewsStory, FilteredNewsStory } from "@/types/reddit-types"
+import { useNewsStories } from "@/hooks/useNewsStories"
+
+function isFilteredStory(story: NewsStory): story is FilteredNewsStory {
+  return 'relevanceScore' in story
+}
 
 interface StoriesListProps {
-  stories: NewsStory[]
+  stories: (NewsStory | FilteredNewsStory)[]
 }
 
 export function StoriesList({ stories }: StoriesListProps) {
+  const { data: filteredStories } = useNewsStories({
+    filtering: {
+      enabled: true,
+      minRelevanceScore: 7,
+      maxStories: 5
+    }
+  })
+
   return (
     <ScrollArea className="h-[calc(100vh-2rem)] pr-4">
       <div className="space-y-4">
-        {stories.map((story) => (
+        {filteredStories?.map((story) => (
           <Card key={story.id} className="hover:bg-accent/50 transition-colors">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">
@@ -44,6 +58,22 @@ export function StoriesList({ stories }: StoriesListProps) {
                   <MessageSquare className="h-4 w-4" />
                   {story.commentCount.toLocaleString()}
                 </span>
+
+                {isFilteredStory(story) && (
+                  <>
+                    <span className="flex items-center gap-1" title="Relevance Score">
+                      <Star className="h-4 w-4" />
+                      {story.relevanceScore.toFixed(1)}
+                    </span>
+                    <div className="flex gap-1">
+                      {story.topics.map((topic) => (
+                        <Badge key={topic} variant="secondary" className="text-xs">
+                          {topic}
+                        </Badge>
+                      ))}
+                    </div>
+                  </>
+                )}
 
                 <a
                   href={story.redditUrl}

@@ -28,6 +28,7 @@ This system automates the process of curating top news stories from Reddit, filt
 - **Details**:
   - Define filtering criteria (e.g., relevance to specific topics like technology, politics, or general interest).
   - Use an LLM to assign a relevance score or classify stories based on a prompt (e.g., "Rate the relevance of this news story to technology on a scale of 1-10").
+  - Filter out NSFW posts.
   - Select a subset of stories (e.g., top 5) based on the filtering results.
 - **Output**: A filtered list of news stories ready for processing.
 
