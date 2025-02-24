@@ -135,7 +135,7 @@ export const useDebate = () => {
       if (error) throw error;
       if (!data.text) throw new Error('No response received');
 
-      const audioResponse = await fetch('http://localhost:3000/api/text-to-speech', {
+      const audioResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/text-to-speech`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: data.text, voiceId: character.voice_id })
