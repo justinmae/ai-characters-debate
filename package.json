@@ -7,7 +7,7 @@
     "dev:client": "vite",
     "dev:server": "tsx src/server.ts",
     "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
-    "build": "vite build",
+    "build": "vite build && tsc -p tsconfig.node.json",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
