@@ -29,7 +29,8 @@ The show pulls from **Reddit’s front page** to bring in the most discussed con
 - **Initial development**: We used **Lovable**, a promptable AI full-stack engineer, to generate the initial boilerplate code and the foundational UI for the project.  
 - **Code editing & refinement**: After setting the base, we utilized **Cursor** to fine-tune the codebase and implement more advanced features.  
 - **AI-powered narration**: For voice generation, we leveraged **ElevenLabs**, providing high-quality AI-generated voices for our two anchors suited for their stark personalities.  
-- **UI & animation**: We incorporated a **dynamic news ticker** at the bottom of the screen to keep the content visually engaging.  
+- **UI & animation**: We incorporated a **dynamic news ticker** at the bottom of the screen to keep the content visually engaging.
+- **LLM Observability**: We used **PostHog** to track the usage of the LLMs.
 - **Content processing & summarization**: We use **OpenAI’s gpt-4o** to extract and summarize key insights from trending Reddit posts, ensuring the news show remains informative and relevant.  
 - **Real-time streaming**: We stream the show live on **Twitch**, creating a seamless experience for viewers to tune in to AI-generated content in real time.  
 - **Dynamic Content**: The pipeline is designed to continuously fetch new content and automatically generate new episodes, ensuring minimal manual intervention.  
@@ -92,6 +93,7 @@ The show pulls from **Reddit’s front page** to bring in the most discussed con
 - Vercel
 - Cursor
 - Reddit API
+- PostHog
 
 
 #  Info about Lovable project
