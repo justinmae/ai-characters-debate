@@ -3,7 +3,30 @@ import cors from 'cors';
 
 const router = express.Router();
 
-router.use(cors());
+// Configure CORS for the router
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173', // Vite dev server
+  'https://ai-characters-debate.vercel.app',
+  'https://ai-characters-debate-6b93hwcrt-justinmaes-projects.vercel.app'
+];
+
+router.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 router.use(express.json());
 
 const handler: RequestHandler = async (req, res, next) => {
