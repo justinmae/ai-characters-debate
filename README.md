@@ -1,24 +1,25 @@
-# Project Story  
-
 ## Inspiration  
 The internet is a 24/7 conversation, constantly generating news, opinions, and debates. Traditional media struggles to keep up, and with its flaws – we've seen the rise and popularity of [Citizen Internet Journalism](https://en.wikipedia.org/wiki/Digital_journalism#Citizen_journalism) providing unfiltered on-the-ground reporting from everyday people.
 
-> image of youtube channels
+In the East, <br>
+<img src="https://github.com/user-attachments/assets/3298469f-f0b9-49e4-a784-24ed9a1a19b2" alt="youtube example" width="600"/> <br>
+and the West,<br>
+<img src="https://github.com/user-attachments/assets/136b6255-8964-46d4-9ab5-8c359c78a43f" alt="youtube example" width="600"/> <br>
+
 Unfortunately, these forms are still flawed – often doing whatever it takes to get views (e.g. fake AI generated provacative cover images)
 
-
-> image of bench
-
+![Screenshot 2025-02-24 at 9 18 18 AM](https://github.com/user-attachments/assets/b4fc9bd9-b9cc-4769-9cbb-23afa4ac68e5)
 
 AI has the potential to bridge the gaps in traditional and digital journalism. 
 We wanted to build an **AI-powered news show** that captures and contextualizes trending stories in **real time**, bringing fresh, AI-generated commentary to the digital world.  
 
-Could we **break** the echo-chambers of the internet with a fresh voice?  
-Could that **give pause** – and prompt people to think differently and consider other perspectives?  
-Inspired by the chaotic, unfiltered discussions happening online, *A Bot’s Take* was born: a news show where AI-powered anchors analyze, report, and react to the internet’s biggest stories.  
+- [ ]  Could we **break** the echo-chambers of the internet with a fresh voice?  
+- [ ]  Could that **give pause** – and prompt people to think differently and consider other perspectives?  <br>
+
+Inspired by the chaotic, unfiltered discussions happening online, **A Bot’s Take** was born: a news show where AI-powered anchors analyze, report, and react to the internet’s biggest stories.  
 
 ## What it does  
-*A Bot’s Take* is an AI-driven news show streamed on **Twitch**, featuring **two AI anchors** that deliver commentary and insights on trending stories. Based of the futuristic TV-show Futurama – we have *Linda, a composed and optimistic news anchor*, and *Morbo, an alien calling out any foolishness and future doom of the news covered.*
+**A Bot’s Take** is an AI-driven news show streamed on **Twitch**, featuring **two AI anchors** that deliver commentary and insights on trending stories. Based of the futuristic TV-show Futurama – we have *Linda, a composed and optimistic news anchor*, and *Morbo, an alien calling out any foolishness and future doom of the news covered.*
 
 The show pulls from **Reddit’s front page** to bring in the most discussed content. The anchors' avatars speak with **AI-generated voices from ElevenLabs**, adding personality and flair to the commentary. The show includes an **animated news ticker** at the bottom, keeping the energy fast-paced and engaging, while the **topic headline** updates dynamically. The content is fully automated, with real-time updates and minimal human intervention.
 
@@ -32,16 +33,15 @@ The show pulls from **Reddit’s front page** to bring in the most discussed con
 - **Dynamic Content**: The pipeline is designed to continuously fetch new content and automatically generate new episodes, ensuring minimal manual intervention.  
 
 ## Challenges we ran into  
-- **3 Project Pivots**: First with an [AI Podcast Show](https://github.com/justinmae/ai-podcaster-convo), then an [AI Podcast Host](https://github.com/iamarsenibragimov/ai-podcaster-experience) where anyone could be a guest, then an AI debating show (current repo initially) before landing on this idea. We'd like to thank **Lovable** for the ability to prototype quickly and pivot without too much pain.
+- **3 Project Pivots**: Simultaneously we tried an [AI Podcast Show](https://github.com/justinmae/ai-podcaster-convo), an [AI Podcast Host](https://github.com/iamarsenibragimov/ai-podcaster-experience) where anyone could be a guest, then an AI debating show (current repo initially) before landing on this idea. We'd like to thank **Lovable** for the ability to prototype quickly and pivot without too much pain.
 
-> Heart Lovable image
+<img src="https://github.com/user-attachments/assets/2383df9c-6005-4650-9655-22f1c416c5ac" alt="loving lovable" width="400"/> <br>
+
+- **Balancing Unfiltered Expression, Unwarranted Bias, and Lack of Context**: Sometimes the anchor (Morbo) gives comments lacking in context. We found our Reddit scrape could sometimes miss the full context behind topics and hence, lead to a shallow reporting. <br> e.g. Image of an anchor's comment. Zenlensky was recently offering to resign to seal Ukraine's NATO membership. However, Morbo's comment in isolation is not a fair view, and could lead to listeners missing the full picture. 
+
+<img src="https://github.com/user-attachments/assets/1a758f17-60a2-4177-b252-011ff623698f" alt="Zenlensky comment" width="900"/> <br>
 
 
-- **Balancing Unfiltered Expression, Unwarranted Bias, and Lack of Context**: Sometimes the anchor (Morbo) gives comments lacking in context. We found our Reddit scrape could sometimes miss the full context behind topics and hence, lead to a shallow reporting.
-
-> image of zenlesnky comment
-
-e.g. Image of an anchor's comment. Zenlensky was recently offering to resign to seal Ukraine's NATO membership. However, Morbo's comment in isolation is not a fair view, and could lead to listeners missing the full picture. 
 - **Ensuring relevance & filtering noise**: Not all trending Reddit posts are suitable for the show. We used OpenAI to provide intelligence in filtering out NSFW content, then scrape the top 50 posts and rank by newsworthiness – picking the top 10 to report on.
 - **AI-generated content tone**: Creating AI-generated commentary that feels natural and engaging is a challenge. We focused on optimizing the **humor, tone, and flow** of the content to feel more human-like.  
 - **Dynamic Content**: Ensuring the system runs autonomously while maintaining content quality required adjustments to our **automation pipelines**.
