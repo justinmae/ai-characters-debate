@@ -10,7 +10,6 @@ import textToSpeechRouter from './api/text-to-speech.js';
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 const app = express();
-const port = 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -64,6 +63,5 @@ app.get('/api/news', async (_req: express.Request, res: express.Response): Promi
     }
 });
 
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
-}); 
+// Remove app.listen() for Vercel
+export default app; 
