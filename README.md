@@ -24,6 +24,8 @@ Inspired by the chaotic, unfiltered discussions happening online, **A Bot’s Ta
 The show pulls from **Reddit’s front page** to bring in the most discussed content. The anchors' avatars speak with **AI-generated voices from ElevenLabs**, adding personality and flair to the commentary. The show includes an **animated news ticker** at the bottom, keeping the energy fast-paced and engaging, while the **topic headline** updates dynamically. The content is fully automated, with real-time updates and minimal human intervention.
 
 ## How we built it  
+![design diagram fixed](https://github.com/user-attachments/assets/f1e492f9-7f48-4635-bfe9-641236e55878)
+
 - **Initial development**: We used **Lovable**, a promptable AI full-stack engineer, to generate the initial boilerplate code and the foundational UI for the project.  
 - **Code editing & refinement**: After setting the base, we utilized **Cursor** to fine-tune the codebase and implement more advanced features.  
 - **AI-powered narration**: For voice generation, we leveraged **ElevenLabs**, providing high-quality AI-generated voices for our two anchors suited for their stark personalities.  
