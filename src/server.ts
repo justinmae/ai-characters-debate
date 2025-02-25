@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import csvtojson from 'csvtojson';
-import textToSpeechRouter from './api/text-to-speech.js';
+import textToSpeechRouter from './api/text-to-speech';
 
 // Load environment variables from .env file in project root
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
