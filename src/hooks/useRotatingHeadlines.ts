@@ -1,29 +1,31 @@
 import { useState, useEffect } from 'react';
-import csvtojson from 'csvtojson';
+import { NEWS_DATA } from '../data/news-data';
 
 export const useRotatingHeadlines = () => {
     const [headlines, setHeadlines] = useState<string>('');
 
     useEffect(() => {
-        const loadHeadlines = async () => {
-            try {
-                const response = await fetch('/news_database.csv');
-                const csvText = await response.text();
-                const jsonArray = await csvtojson({
-                    noheader: true,
-                    headers: ['title', 'description']
-                }).fromString(csvText);
-
-                const titles = jsonArray.map(item => item.title.replace(/^"|"$/g, ''));
-                const concatenatedHeadlines = titles.join(' • BREAKING NEWS • ');
+        // Use the imported NEWS_DATA instead of fetching from CSV
+        try {
+            // Create a longer string to ensure proper scrolling
+            const titles = NEWS_DATA.map(item => item.title.trim());
+            
+            // Use the original format without additional prefix
+            const concatenatedHeadlines = titles.join(' • BREAKING NEWS • ');
+            
+            // Make sure we have enough content for the animation to work
+            // Repeat the headlines if necessary to ensure sufficient length
+            if (concatenatedHeadlines.length < 500) {
+                setHeadlines(concatenatedHeadlines + ' • BREAKING NEWS • ' + concatenatedHeadlines);
+            } else {
                 setHeadlines(concatenatedHeadlines);
-            } catch (error) {
-                console.error('Error loading headlines:', error);
-                setHeadlines('Loading headlines...');
             }
-        };
-
-        loadHeadlines();
+            
+            console.log('Headlines length:', concatenatedHeadlines.length);
+        } catch (error) {
+            console.error('Error processing headlines:', error);
+            setHeadlines('BREAKING NEWS • Technical Difficulties at AI News Network • BREAKING NEWS');
+        }
     }, []);
 
     return headlines;

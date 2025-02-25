@@ -1,4 +1,4 @@
-// Serverless function for text-to-speech API
+// Direct handler for text-to-speech API
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
@@ -10,6 +10,7 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173', // Vite dev server
+  'http://localhost:8080',
   'https://ai-characters-debate.vercel.app',
   'https://ai-characters-debate-6b93hwcrt-justinmaes-projects.vercel.app',
   'https://ai-characters-debate-git-fixserverissue-justinmaes-projects.vercel.app'
@@ -57,6 +58,18 @@ app.use(express.json());
 // Standalone handler for text-to-speech
 const handler = async (req, res) => {
   try {
+    console.log('Received text-to-speech request:', req.method, req.url);
+    
+    // Handle preflight OPTIONS request
+    if (req.method === 'OPTIONS') {
+      return res.status(204).end();
+    }
+    
+    // Only accept POST requests
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+    
     const { text, voiceId } = req.body;
     console.log('Received request:', { text, voiceId });
 
@@ -108,11 +121,33 @@ const handler = async (req, res) => {
   }
 };
 
+// Add routes for both root and any path under this endpoint
 app.post('/', handler);
+app.post('*', handler);
+app.get('/', (req, res) => {
+  res.json({ status: 'Text-to-speech API is running' });
+});
 
-// Export a serverless function handler
+// Export a serverless function handler that works with both HTTP requests and Express
 export default function(req, res) {
   // Log the request for debugging
-  console.log(`Received ${req.method} request to ${req.url}`);
+  console.log(`Received ${req.method} request to text-to-speech endpoint: ${req.url}`);
+  
+  // Serverless direct invocation - manually handle the request
+  if (req.method === 'POST') {
+    return handler(req, res);
+  }
+  
+  // Handle OPTIONS requests directly for CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Content-Type-Options, Accept, X-Requested-With, Origin');
+    res.setHeader('Access-Control-Max-Age', '86400');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    return res.status(204).end();
+  }
+  
+  // For Express routing
   return app(req, res);
 } 

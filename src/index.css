@@ -178,4 +178,22 @@
   .animate-ticker {
     animation: ticker 20s linear infinite;
   }
+
+  /* Add more specific selector for ticker animation */
+  .news-ticker-container {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  .news-ticker-content {
+    display: inline-flex;
+    animation: tickerScroll 240s linear infinite;
+    padding: 1rem 0;
+    white-space: nowrap;
+  }
+
+  .news-ticker-content:hover {
+    animation-play-state: paused;
+  }
 }

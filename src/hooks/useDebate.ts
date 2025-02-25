@@ -5,6 +5,7 @@ import { DebateCharacter, DebateMessage } from '@/types/debate';
 import { playAudioFromBase64, stopAudio } from '@/utils/audio';
 import { FIXED_CHARACTERS } from '@/constants/characters';
 import { newsQueue } from '@/lib/news-queue';
+import { getApiUrl } from '../utils/api';
 
 export const useDebate = () => {
   const [topic, setTopic] = useState('');
@@ -135,7 +136,7 @@ export const useDebate = () => {
       if (error) throw error;
       if (!data.text) throw new Error('No response received');
 
-      const audioResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/text-to-speech`, {
+      const audioResponse = await fetch(getApiUrl('/api/text-to-speech'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: data.text, voiceId: character.voice_id })
