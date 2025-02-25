@@ -17,6 +17,27 @@ const allowedOrigins = [
   'https://ai-characters-debate-git-fixserverissue-justinmaes-projects.vercel.app'
 ];
 
+// Handle CORS preflight requests directly
+app.options('*', (req, res) => {
+  const origin = req.headers.origin;
+  
+  // Check if the origin is allowed
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Content-Type-Options, Accept, X-Requested-With, Origin, X-Requested-With, Access-Control-Request-Method, Access-Control-Request-Headers');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Respond with 204 No Content
+  res.status(204).end();
+});
+
+// Then apply CORS middleware for other requests
 app.use(cors({
   origin: function(origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -29,8 +50,8 @@ app.use(cors({
     return callback(null, true);
   },
   credentials: true,
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
 
 app.get('/', async (req, res) => {
@@ -49,20 +70,33 @@ app.get('/', async (req, res) => {
       }
 
       const csvText = fs.readFileSync(csvPath, 'utf-8');
-      const news = await csvtojson({
+      const newsItems = await csvtojson({
         noheader: true,
         headers: ['title', 'description']
       }).fromString(csvText);
 
-      if (!news || news.length === 0) {
+      if (!newsItems || newsItems.length === 0) {
         return res.json(fallbackNews);
       }
 
-      const randomNews = news[Math.floor(Math.random() * news.length)];
+      // Filter out any invalid entries
+      const validNews = newsItems.filter(item => 
+        item && typeof item.title === 'string' && typeof item.description === 'string'
+      );
+      
+      if (validNews.length === 0) {
+        return res.json(fallbackNews);
+      }
+
+      const randomNews = validNews[Math.floor(Math.random() * validNews.length)];
+
+      // Safely process the strings
+      const safeTitle = typeof randomNews.title === 'string' ? randomNews.title.replace(/^"|"$/g, '') : 'News headline unavailable';
+      const safeDescription = typeof randomNews.description === 'string' ? randomNews.description.replace(/^"|"$/g, '') : 'News details unavailable';
 
       res.json({
-        title: randomNews.title.replace(/^"|"$/g, ''),
-        description: randomNews.description.replace(/^"|"$/g, '')
+        title: safeTitle,
+        description: safeDescription
       });
     } catch (error) {
       console.error('Error reading news file:', error);

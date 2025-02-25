@@ -4,6 +4,13 @@
  * - In production/preview: uses relative URL (automatically uses same origin)
  */
 export const getApiBaseUrl = (): string => {
+  // If we're in a preview deployment (URL contains 'fixserverissue'),
+  // always use a relative URL regardless of environment variables
+  if (typeof window !== 'undefined' && 
+      window.location.hostname.includes('fixserverissue')) {
+    return '';
+  }
+  
   // If we have an explicit API URL from environment vars, use it
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
