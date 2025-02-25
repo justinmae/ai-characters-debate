@@ -2,26 +2,12 @@
   "version": 2,
   "buildCommand": "npm run build:vercel",
   "outputDirectory": "dist",
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
+  "rewrites": [
+    { "source": "/api/text-to-speech", "destination": "/api/text-to-speech" },
+    { "source": "/api/(.*)", "destination": "/api/$1" }
+  ],
   "routes": [
-    {
-      "src": "/api/text-to-speech",
-      "dest": "/api/text-to-speech/index.js"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1.js"
-    },
-    {
-      "handle": "filesystem"
-    },
-    { 
-      "src": "/(.*)", 
-      "dest": "/client/index.html" 
-    }
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/client/index.html" }
   ]
 } 
