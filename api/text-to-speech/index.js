@@ -11,7 +11,8 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173', // Vite dev server
   'https://ai-characters-debate.vercel.app',
-  'https://ai-characters-debate-6b93hwcrt-justinmaes-projects.vercel.app'
+  'https://ai-characters-debate-6b93hwcrt-justinmaes-projects.vercel.app',
+  'https://ai-characters-debate-git-fixserverissue-justinmaes-projects.vercel.app'
 ];
 
 app.use(cors({
