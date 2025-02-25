@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join, resolve } from 'path';
 import { readFileSync, existsSync } from 'fs';
 import csvtojson from 'csvtojson';
-import textToSpeechRouter from './api/text-to-speech';
+import textToSpeechRouter from './api/text-to-speech.js';
 
 // ES Module dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
