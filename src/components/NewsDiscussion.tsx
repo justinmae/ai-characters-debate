@@ -121,10 +121,10 @@ const NewsDiscussion = ({
           <div className="h-12 bg-white" />
           
           {/* News ticker - full width */}
-          <div className="w-full bg-black overflow-hidden whitespace-nowrap">
-            <div className="inline-flex animate-[tickerScroll_240s_linear_infinite] py-4">
+          <div className="w-full bg-black news-ticker-container">
+            <div className="news-ticker-content">
               {/* Duplicate the headline string twice to ensure smooth infinite loop */}
-              {[1, 2].map((_, i) => (
+              {[1, 2, 3].map((_, i) => (
                 <div key={i} className="inline-block whitespace-nowrap leading-8">
                   <span className="text-white text-xl font-medium">
                     {currentHeadline} • AI NEWS NETWORK • 

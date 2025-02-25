@@ -7,12 +7,24 @@ export const useRotatingHeadlines = () => {
     useEffect(() => {
         // Use the imported NEWS_DATA instead of fetching from CSV
         try {
-            const titles = NEWS_DATA.map(item => item.title);
+            // Create a longer string to ensure proper scrolling
+            const titles = NEWS_DATA.map(item => item.title.trim());
+            
+            // Use the original format without additional prefix
             const concatenatedHeadlines = titles.join(' • BREAKING NEWS • ');
-            setHeadlines('BREAKING NEWS • ' + concatenatedHeadlines);
+            
+            // Make sure we have enough content for the animation to work
+            // Repeat the headlines if necessary to ensure sufficient length
+            if (concatenatedHeadlines.length < 500) {
+                setHeadlines(concatenatedHeadlines + ' • BREAKING NEWS • ' + concatenatedHeadlines);
+            } else {
+                setHeadlines(concatenatedHeadlines);
+            }
+            
+            console.log('Headlines length:', concatenatedHeadlines.length);
         } catch (error) {
             console.error('Error processing headlines:', error);
-            setHeadlines('Loading headlines...');
+            setHeadlines('BREAKING NEWS • Technical Difficulties at AI News Network • BREAKING NEWS');
         }
     }, []);
 
