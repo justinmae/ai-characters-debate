@@ -1,4 +1,4 @@
-import express, { Request, Response, RequestHandler } from 'express';
+import express, { type Request, type Response, type RequestHandler } from 'express';
 import cors from 'cors';
 
 const router = express.Router();

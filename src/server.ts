@@ -1,13 +1,18 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path';
-import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join, resolve } from 'path';
+import { readFileSync, existsSync } from 'fs';
 import csvtojson from 'csvtojson';
 import textToSpeechRouter from './api/text-to-speech';
 
+// ES Module dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 // Load environment variables from .env file in project root
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config({ path: resolve(process.cwd(), '.env') });
 
 const app = express();
 
@@ -43,11 +48,11 @@ console.log('ELEVEN_LABS_API_KEY status:', process.env.ELEVEN_LABS_API_KEY ? 'Se
 app.use('/api/text-to-speech', textToSpeechRouter);
 
 // Add news API endpoint
-app.get('/api/news', async (_req: express.Request, res: express.Response): Promise<void> => {
+app.get('/api/news', async (_req, res) => {
     try {
-        const csvPath = path.join(process.cwd(), 'public', 'news_database.csv');
+        const csvPath = join(process.cwd(), 'public', 'news_database.csv');
 
-        if (!fs.existsSync(csvPath)) {
+        if (!existsSync(csvPath)) {
             res.status(404).json({
                 error: 'News database file not found',
                 title: 'Breaking: Technical Difficulties at AI News Network',
@@ -56,7 +61,7 @@ app.get('/api/news', async (_req: express.Request, res: express.Response): Promi
             return;
         }
 
-        const csvText = fs.readFileSync(csvPath, 'utf-8');
+        const csvText = readFileSync(csvPath, 'utf-8');
         const news = await csvtojson({
             noheader: true,
             headers: ['title', 'description']
