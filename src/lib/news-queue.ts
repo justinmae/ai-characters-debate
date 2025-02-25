@@ -57,6 +57,7 @@ export class NewsQueue {
             }).fromString(csvText);
 
             const newsItems = jsonArray
+                .filter(item => item && typeof item.title === 'string' && typeof item.description === 'string')
                 .map((item, index) => ({
                     id: index + 1,
                     title: item.title.replace(/^"|"$/g, ''),
@@ -66,11 +67,13 @@ export class NewsQueue {
 
             if (newsItems.length === 0) {
                 this.clearUsedIds();
-                this.queue = this.shuffleArray(jsonArray.map((item, index) => ({
-                    id: index + 1,
-                    title: item.title.replace(/^"|"$/g, ''),
-                    description: item.description.replace(/^"|"$/g, '')
-                })));
+                this.queue = this.shuffleArray(jsonArray
+                    .filter(item => item && typeof item.title === 'string' && typeof item.description === 'string')
+                    .map((item, index) => ({
+                        id: index + 1,
+                        title: item.title.replace(/^"|"$/g, ''),
+                        description: item.description.replace(/^"|"$/g, '')
+                    })));
             } else {
                 this.queue = this.shuffleArray(newsItems);
             }

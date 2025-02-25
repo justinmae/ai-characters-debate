@@ -7,9 +7,31 @@ const router = express.Router();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173', // Vite dev server
+  'http://localhost:8080',
   'https://ai-characters-debate.vercel.app',
-  'https://ai-characters-debate-6b93hwcrt-justinmaes-projects.vercel.app'
+  'https://ai-characters-debate-6b93hwcrt-justinmaes-projects.vercel.app',
+  'https://ai-characters-debate-git-fixserverissue-justinmaes-projects.vercel.app'
 ];
+
+// Handle CORS preflight requests directly
+router.options('*', (req, res) => {
+  const origin = req.headers.origin;
+  
+  // Check if the origin is allowed
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Content-Type-Options, Accept, X-Requested-With, Origin, X-Requested-With, Access-Control-Request-Method, Access-Control-Request-Headers');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Respond with 204 No Content
+  res.status(204).end();
+});
 
 router.use(cors({
   origin: function(origin, callback) {
@@ -23,8 +45,8 @@ router.use(cors({
     return callback(null, true);
   },
   credentials: true,
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
 
 router.use(express.json());
@@ -80,6 +102,11 @@ const handler: RequestHandler = async (req, res, next) => {
         next(error);
     }
 };
+
+// Add a GET handler for testing
+router.get('/', (req, res) => {
+    res.json({ status: 'Text-to-speech API is ready' });
+});
 
 router.post('/', handler);
 

@@ -2,10 +2,17 @@
   "version": 2,
   "buildCommand": "npm run build:vercel",
   "outputDirectory": "dist",
-  "rewrites": [
-    { "source": "/api/text-to-speech", "destination": "/api/text-to-speech" },
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/assets/(.*)", "destination": "/client/assets/$1" },
-    { "source": "/(.*)", "destination": "/client/index.html" }
+  "functions": {
+    "api/*.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
+  "routes": [
+    { "src": "/api/text-to-speech", "dest": "/api/text-to-speech.js" },
+    { "src": "/api/news", "dest": "/api/news.js" },
+    { "src": "/api", "dest": "/api/index.js" },
+    { "src": "/assets/(.*)", "dest": "/client/assets/$1" },
+    { "src": "/(.*)", "dest": "/client/index.html" }
   ]
 } 
