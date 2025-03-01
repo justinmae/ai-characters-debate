@@ -6,7 +6,6 @@ The internet is a 24/7 conversation, constantly generating news, opinions, and d
 In the [East](https://www.youtube.com/@JasonLivinginChina) and the [West](https://www.youtube.com/@CashJordan) <br>
 
 Unfortunately, these forms are still flawed – often doing whatever it takes to get views (e.g. fake AI generated provacative cover images) <br>
-![Screenshot 2025-02-24 at 9 18 18 AM](https://github.com/user-attachments/assets/22410432-fee9-4b33-b861-2d1b3ef8c205)
 
 
 AI has the potential to bridge the gaps in traditional and digital journalism. 
@@ -18,7 +17,6 @@ We wanted to build an **AI-powered news show** that captures and contextualizes 
 Inspired by the chaotic, unfiltered discussions happening online, **A Bot’s Take** was born: a news show where AI-powered anchors analyze, report, and react to the internet’s biggest stories.  
 
 ## What it does  
-<img src="https://github.com/user-attachments/assets/705d54e2-e6cf-435b-8f1c-ed6da45c23c9" alt="a bot's take logo" width="200"/> <br>
 
 **A Bot’s Take** is an AI-driven news show streamed on **Twitch**, featuring **two AI anchors** that deliver commentary and insights on trending stories. Based of the futuristic TV-show Futurama – we have *Linda, a composed and optimistic news anchor*, and *Morbo, an alien calling out any foolishness and future doom of the news covered.*
 
