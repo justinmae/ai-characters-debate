@@ -5,7 +5,7 @@ The internet is a 24/7 conversation, constantly generating news, opinions, and d
 
 In the [East](https://www.youtube.com/@JasonLivinginChina) and the [West](https://www.youtube.com/@CashJordan) <br>
 
-Unfortunately, these forms are still flawed – often doing whatever it takes to get views (e.g. fake AI generated provacative cover images)
+Unfortunately, these forms are still flawed – often doing whatever it takes to get views (e.g. fake AI generated provacative cover images) <br>
 ![Screenshot 2025-02-24 at 9 18 18 AM](https://github.com/user-attachments/assets/b4fc9bd9-b9cc-4769-9cbb-23afa4ac68e5)
 
 
