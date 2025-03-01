@@ -18,6 +18,8 @@ We wanted to build an **AI-powered news show** that captures and contextualizes 
 Inspired by the chaotic, unfiltered discussions happening online, **A Bot’s Take** was born: a news show where AI-powered anchors analyze, report, and react to the internet’s biggest stories.  
 
 ## What it does  
+![a bot's take - logo copy 2](https://github.com/user-attachments/assets/8fe5330e-2aed-4588-99a1-bc9775b8f269) <br>
+
 **A Bot’s Take** is an AI-driven news show streamed on **Twitch**, featuring **two AI anchors** that deliver commentary and insights on trending stories. Based of the futuristic TV-show Futurama – we have *Linda, a composed and optimistic news anchor*, and *Morbo, an alien calling out any foolishness and future doom of the news covered.*
 
 The show pulls from **Reddit’s front page** to bring in the most discussed content. The anchors' avatars speak with **AI-generated voices from ElevenLabs**, adding personality and flair to the commentary. The show includes an **animated news ticker** at the bottom, keeping the energy fast-paced and engaging, while the **topic headline** updates dynamically. The content is fully automated, with real-time updates and minimal human intervention.
